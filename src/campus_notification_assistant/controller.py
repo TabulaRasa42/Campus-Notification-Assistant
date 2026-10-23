@@ -1,0 +1,199 @@
+"""Qt 适配层：QML 只绑定状态并调用应用服务操作。"""
+
+from collections.abc import Callable
+from typing import Any
+
+from PySide6.QtCore import Property, QObject, QRunnable, QThreadPool, Signal, Slot
+
+from .errors import ServiceError
+from .models import Todo
+from .service import NotificationService
+
+
+class WorkerSignals(QObject):
+    finished = Signal(str)
+
+
+class Worker(QRunnable):
+    def __init__(self, operation: Callable[[], object]) -> None:
+        super().__init__()
+        self.operation = operation
+        self.signals = WorkerSignals()
+
+    def run(self) -> None:
+        error = ""
+        try:
+            self.operation()
+        except ServiceError as exc:
+            error = str(exc)
+        except Exception:  # noqa: BLE001 - Qt worker must not leak exceptions or secrets
+            # Never expose exception/HTTP bodies, which may contain credentials or notice data.
+            error = "操作失败，输入与草稿已保留；请检查配置后重试。"
+        self.signals.finished.emit(error)
+
+
+class Controller(QObject):
+    changed = Signal()
+
+    def __init__(self, service: NotificationService) -> None:
+        super().__init__()
+        self.service = service
+        self.pool = QThreadPool(self)
+        self._busy = False
+        self._message = ""
+        self._selected: Todo | None = None
+        self._todos: list[Todo] = []
+        self._configured = False
+        self._worker: Worker | None = None
+        self._operation = ""
+        try:
+            self._configured = service.key_configured()
+            self._todos = service.list_todos()
+        except ServiceError as exc:
+            self._message = str(exc)
+
+    @Property(bool, notify=changed)
+    def busy(self) -> bool:
+        return self._busy
+
+    @Property(str, notify=changed)
+    def message(self) -> str:
+        return self._message
+
+    @Property(bool, notify=changed)
+    def keyConfigured(self) -> bool:
+        return self._configured
+
+    @Property(str, constant=True)
+    def dataPath(self) -> str:
+        return str(self.service.database.resolve())
+
+    @Property(str, notify=changed)
+    def sourceText(self) -> str:
+        return self._selected.source if self._selected else self.service.source
+
+    @Property(bool, notify=changed)
+    def unsaved(self) -> bool:
+        return self.service.has_unsaved_changes
+
+    @Property(bool, notify=changed)
+    def readOnly(self) -> bool:
+        return self._busy or self._selected is not None or self.service.draft is not None
+
+    @Property(bool, notify=changed)
+    def canSave(self) -> bool:
+        return (
+            not self._busy
+            and self._selected is None
+            and self.service.draft is not None
+            and self.service.has_unsaved_changes
+        )
+
+    @Property("QVariantMap", notify=changed)  # type: ignore[arg-type]
+    def resultData(self) -> dict[str, Any]:
+        result = self._selected or self.service.draft
+        return result.item.model_dump(mode="json") if result else {}
+
+    @Property("QVariantList", notify=changed)  # type: ignore[arg-type]
+    def todos(self) -> list[dict[str, str]]:
+        return [
+            {
+                "id": todo.id,
+                "title": todo.item.action.value,
+                "date": todo.item.deadline.date.isoformat(),
+            }
+            for todo in self._todos
+        ]
+
+    @Property(str, notify=changed)
+    def resultHeading(self) -> str:
+        if self._selected or (self.service.draft and not self.service.has_unsaved_changes):
+            return "已保存的待办"
+        return "提取结果 · 待核对"
+
+    @Slot(str)
+    def updateSource(self, text: str) -> None:
+        if self._busy or self._selected is not None:
+            return
+        try:
+            self.service.set_source(text)
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
+    @Slot(str)
+    def configureKey(self, secret: str) -> None:
+        if self._busy:
+            return
+        try:
+            self.service.configure_key(secret)
+            self._configured = True
+            self._message = "API Key 已安全保存到 Windows 凭据存储。"
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
+    def _start(self, operation: Callable[[], object], name: str) -> None:
+        if self._busy:
+            return
+        self._busy = True
+        self._operation = name
+        self._message = "正在提取，请稍候…" if name == "extract" else "正在保存…"
+        self._worker = Worker(operation)
+        self._worker.signals.finished.connect(self._finished)
+        self.changed.emit()
+        self.pool.start(self._worker)
+
+    @Slot()
+    def extract(self) -> None:
+        if self._selected is None:
+            self._start(self.service.extract, "extract")
+
+    @Slot()
+    def confirm(self) -> None:
+        if self.canSave and self.service.draft is not None:
+            draft_id = self.service.draft.id
+            self._start(lambda: self.service.confirm(draft_id), "save")
+
+    @Slot(str)
+    def _finished(self, error: str) -> None:
+        self._busy = False
+        self._message = error or (
+            "请逐项核对右侧信息与原文依据，确认无误后保存。"
+            if self._operation == "extract"
+            else "已保存，可从待办清单打开。"
+        )
+        try:
+            self._todos = self.service.list_todos()
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
+    @Slot()
+    def clearDraft(self) -> None:
+        if self._busy:
+            return
+        self.service.discard(confirmed=True)
+        self._selected = None
+        self._message = ""
+        self.changed.emit()
+
+    @Slot(str)
+    def openTodo(self, todo_id: str) -> None:
+        if self._busy:
+            return
+        try:
+            self.service.discard()
+            self._selected = self.service.get_todo(todo_id)
+            self._message = "待办及原文已从本地数据库读取。"
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
+    @Slot()
+    def notifyBusyClose(self) -> None:
+        self._message = "操作进行中，请等待完成后再退出。"
+        self.changed.emit()
+
+    def wait_for_workers(self) -> None:
+        self.pool.waitForDone()

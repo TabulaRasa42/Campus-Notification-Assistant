@@ -1,0 +1,57 @@
+# Issue #2 实现记录
+
+任务：跑通单事项通知的真实提取、确认保存与重启回查。
+父规格：GitHub Issue #1；范围仅 Issue #2；读取时二者均无评论。
+
+## 审查基线
+
+- 分支 main，起始提交 241554064260a493e017f9ea578827b0c0e2b6bf。
+- 已有未跟踪 GLOSSARY.md、docs/adr/0001-python-qtquick-desktop.md 原样保留，不纳入实现提交。
+- GLOSSARY SHA256：51C8C013F3B8047E2DBB5BB6C58F8A086CC98737DC52127B3259B28619D7A8B4。
+- ADR SHA256：C31DF9190F3634B9DD219DEAA807CFE9BF260FAB6B85C5E985A99A5B9BCD12E9。
+
+## 已确认的测试边界
+
+应用服务公开操作使用真实临时 SQLite，只替换外部 AI HTTP 响应。
+密钥测试使用独立命名空间的真实 Windows 凭据存储，测试后删除测试凭据。
+QML 交互覆盖左右核对、异步加载、错误反馈、确认保存及丢弃提示。
+
+## API 依据
+
+- https://api-docs.deepseek.com/api/create-chat-completion/
+- https://api-docs.deepseek.com/guides/json_mode/
+
+2026-10-23 查验官方 deepseek-flash；thinking.type=disabled；stream=false；
+response_format.type=json_object；提示词包含 JSON 示例。
+
+## TDD 与验证记录
+
+按纵向切片先运行失败测试再实现：
+
+1. 单事项提取 → 确认前无待办 → 确认后持久化与重启读取：初始缺少服务模块，随后通过。
+2. 无效依据、日期、材料、空事项与多事项：初始无法拒绝，补充结构与原文匹配后通过。
+3. HTTP 错误、截断 JSON 与临时故障重试：初始 5 项失败，补充安全错误与最多一次重试后通过。
+4. 真实凭据、SQLite 锁定失败与草稿丢弃：初始 3 项失败，实现后通过。
+5. QML 异步、核对与保存：初始无入口；随后修复动态清单定位与原生样式告警后通过。
+6. 日期精度：发现 Pydantic 接受午夜时间戳；改为严格日期校验后通过。
+
+2026-10-23 验证结果：
+
+- 完整 pytest：27 passed（23 个服务场景，4 个实际 QML 交互场景）。
+- mypy strict：8 个应用模块通过。
+- Ruff lint/format：通过。
+- uv build：从 sdist 构建 wheel 成功，确认包含 Main.qml。
+- 真实 Qt 渲染：1180×820 与最小 960×700 窗口检查；长内容在各自区域滚动。
+- Windows keyring：真实用户会话、独立测试命名空间下保存、重读及删除通过。
+- 原有 GLOSSARY 与 ADR SHA256 未改变。
+
+环境说明：沙箱用户会话无法使用 Windows 凭据写入（WinError 1312），完整凭据与
+QML 测试在获自动审批的真实用户会话执行，临时数据目录用 .host-* 忽略。
+不以明文后端或模拟 keyring 掩盖环境限制。
+
+## 尚未验收
+
+真实 DeepSeek API 成功调用尚未完成：本应用凭据存储及 DEEPSEEK_API_KEY 均未配置。
+真实验收脚本 tools/live_acceptance.py 在无凭据时明确返回退出码 2，不调用测试替身。
+配置密钥后执行 uv run python tools/live_acceptance.py，检查输出并人工核对合成样例。
+本记录不宣称 Issue #2 的全部验收标准已完成，不关闭 Issue。
