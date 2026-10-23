@@ -32,7 +32,9 @@ Tests use an in-memory external keyring backend and offscreen Qt, never real use
 - #3 may extend Controller result/correction properties and QML field controls;
   #5 edits worker/start/finish/input methods; #7 adds duplicate properties/slots and
   dialog. Make local hunks; report cross-owner interface changes before implementing.
-  Primary agent resolves overlap and combined behavior; integration order #3, #5, #7.
+  Primary agent resolves overlap and combined behavior. Final integration order is
+  #5, #3, #7: request reservation/locking first, review normalization next, duplicate
+  decision UI last. Both extraction entry points reserve their snapshot before queuing.
 
 ## Required combined verification
 
