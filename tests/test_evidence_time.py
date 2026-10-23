@@ -56,6 +56,11 @@ def test_invalid_citation_stays_reviewable_until_explicit_user_correction(tmp_pa
             "uncertain",
         ),
         (
+            "2026年11月15日前往礼堂参加活动，请报名。",
+            {"date": "2026-11-15", "evidence": "2026年11月15日"},
+            "uncertain",
+        ),
+        (
             "请于本周五报名。参考往届通知：2026年11月15日截止。",
             {"date": "2026-11-15", "evidence": "本周五"},
             "uncertain",

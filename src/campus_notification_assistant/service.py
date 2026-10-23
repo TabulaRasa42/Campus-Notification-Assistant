@@ -80,8 +80,13 @@ def normalize_item(item: Item, source: str) -> Item:
             preceding = re.split(r"[。；;，,\n]", source[: match.start()])[-1][-12:]
             # Submission alone is not a deadline; do not cross a clause boundary
             # from an activity start into a later request to submit something.
-            if re.search(r"截止|最迟|之前|以前|前|为止", following) or re.search(
-                r"截止|截至|最迟", preceding
+            if re.match(
+                r"\s*(?:(?:\d{1,2}[:：]\d{2}|\d{1,2}[时点](?:\d{1,2}分)?)(?:整)?\s*)?"
+                r"(?:之前|以前|前(?!往)|截止|为止)",
+                following,
+            ) or re.search(
+                r"(?:截止(?:日期|时间)?|截至|最迟)(?:应|须|必须|在|于|至|为|是|到|：|:|\s)*$",
+                preceding,
             ):
                 try:
                     candidates.add(date(*(int(part) for part in match.groups())))
