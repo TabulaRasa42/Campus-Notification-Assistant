@@ -71,3 +71,4 @@ uv run python tools/live_acceptance.py
 
 Issue #2 的历史验收见 [实现记录](docs/implementation-issue-2.md)。
 本次范围、接口与组合验收要求见 [集成约定](docs/integration-issues-3-5-7.md)。
+逐项验收、真实调用与双轴审查结果见 [集成验收记录](docs/acceptance-issues-3-5-7.md)。
