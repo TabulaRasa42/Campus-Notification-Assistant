@@ -195,15 +195,37 @@ def test_draft_discard_requires_confirmation_and_source_change_invalidates_resul
     assert not service.has_unsaved_changes
     assert service.list_todos() == []
 
-@pytest.mark.parametrize("content", [
-    "", "{}", "null", '{"items":[]}',
-    json.dumps({"items": [{**RESULT["items"][0], "materials": []}]}),
-    json.dumps({"items": [{**RESULT["items"][0], "deadline": {
-        "date": "2026-11-15T00:00:00Z", "evidence": "2026年11月15日前"}}]}),
-])
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "",
+        "{}",
+        "null",
+        '{"items":[]}',
+        json.dumps({"items": [{**RESULT["items"][0], "materials": []}]}),
+        json.dumps(
+            {
+                "items": [
+                    {
+                        **RESULT["items"][0],
+                        "deadline": {
+                            "date": "2026-11-15T00:00:00Z",
+                            "evidence": "2026年11月15日前",
+                        },
+                    }
+                ]
+            }
+        ),
+    ],
+)
 def test_incomplete_or_non_date_only_result_is_rejected(tmp_path, content):
-    response = httpx.Response(200, json={"choices": [{"finish_reason": "stop", "message": {"content": content}}]})
-    service = NotificationService(tmp_path / "todos.sqlite3", transport=httpx.MockTransport(lambda r: response))
+    response = httpx.Response(
+        200, json={"choices": [{"finish_reason": "stop", "message": {"content": content}}]}
+    )
+    service = NotificationService(
+        tmp_path / "todos.sqlite3", transport=httpx.MockTransport(lambda r: response)
+    )
     service.set_source(SOURCE)
     with pytest.raises(ServiceError):
         service.extract(api_key="test-key")
@@ -213,11 +235,41 @@ def test_incomplete_or_non_date_only_result_is_rejected(tmp_path, content):
 
 def test_no_key_gives_actionable_error_without_sending_notice(tmp_path):
     namespace = "campus-notification-assistant.no-key-test." + str(uuid4())
+
     def must_not_send(request):
         pytest.fail("No key: notice must not be sent")
-    service = NotificationService(tmp_path / "todos.sqlite3", credential_namespace=namespace,
-                                  transport=httpx.MockTransport(must_not_send))
+
+    service = NotificationService(
+        tmp_path / "todos.sqlite3",
+        credential_namespace=namespace,
+        transport=httpx.MockTransport(must_not_send),
+    )
     service.set_source(SOURCE)
     with pytest.raises(ServiceError, match="配置"):
         service.extract()
     assert service.source == SOURCE
+
+
+def test_deadline_evidence_can_include_activity_date_in_same_sentence(tmp_path):
+    source = "活动于2026年12月1日举行，请于2026年11月15日前完成报名并提交报名表。"
+    content = {
+        "items": [
+            {
+                "action": {"value": "完成报名", "evidence": "完成报名"},
+                "deadline": {"date": "2026-11-15", "evidence": source},
+                "materials": [{"value": "报名表", "evidence": "报名表"}],
+            }
+        ]
+    }
+    response = httpx.Response(
+        200,
+        json={"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(content)}}]},
+    )
+    service = NotificationService(
+        tmp_path / "todos.sqlite3", transport=httpx.MockTransport(lambda r: response)
+    )
+    service.set_source(source)
+    draft = service.extract(api_key="test-key")
+    todo = service.confirm(draft.id)
+    assert todo.item.deadline.date.isoformat() == "2026-11-15"
+    assert todo.item.deadline.evidence == source

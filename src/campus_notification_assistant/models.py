@@ -40,5 +40,3 @@ class Draft(ValueModel):
 
 class Todo(Draft):
     pass
-
-

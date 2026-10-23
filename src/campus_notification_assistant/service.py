@@ -32,7 +32,7 @@ def validate_evidence(item: Item, source: str) -> None:
         matches = {date(int(y), int(m), int(d)) for y, m, d in dates}
     except ValueError:
         raise ServiceError("原文日期无效，请核对通知。") from None
-    if matches != {item.deadline.date}:
+    if item.deadline.date not in matches:
         raise ServiceError("截止日期与原文依据不符；本版本要求明确的完整年月日。")
 
 

@@ -297,6 +297,3 @@ ApplicationWindow {
         onAccepted: window.proceed(window.pendingAction, window.pendingTodo)
     }
 }
-
-
-
