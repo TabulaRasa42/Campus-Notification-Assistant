@@ -2,10 +2,11 @@
 
 import re
 import sqlite3
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import date
 from pathlib import Path
+from threading import RLock
 from uuid import uuid4
 
 import httpx
@@ -13,7 +14,7 @@ from pydantic import ValidationError
 
 from .credentials import DEFAULT_NAMESPACE, Credentials
 from .deepseek import DeepSeek
-from .errors import ServiceError
+from .errors import ServiceError, StaleRequestError
 from .models import Draft, Item, Todo
 
 
@@ -47,6 +48,8 @@ class NotificationService:
         self.database = database
         self.ai = DeepSeek(transport)
         self.credentials = Credentials(credential_namespace)
+        self._state_lock = RLock()
+        self._generation = 0
         self.source = ""
         self.draft: Draft | None = None
         self._confirmed_id: str | None = None
@@ -84,52 +87,80 @@ class NotificationService:
         self.credentials.clear()
 
     def set_source(self, source: str, *, discard: bool = False) -> None:
-        if source != self.source:
-            if self.draft is not None and self.has_unsaved_changes and not discard:
-                raise ServiceError("修改原文会丢弃当前提取结果，请先确认丢弃。")
-            self.draft = None
-        self.source = source
+        with self._state_lock:
+            if source != self.source:
+                self._generation += 1
+                if self.draft is not None and self.has_unsaved_changes and not discard:
+                    raise ServiceError("修改原文会丢弃当前提取结果，请先确认丢弃。")
+                self.draft = None
+            self.source = source
 
     def discard(self, *, confirmed: bool = False) -> None:
-        if self.has_unsaved_changes and not confirmed:
-            raise ServiceError("草稿尚未保存，请先确认丢弃。")
-        self.source = ""
-        self.draft = None
+        with self._state_lock:
+            if self.has_unsaved_changes and not confirmed:
+                raise ServiceError("草稿尚未保存，请先确认丢弃。")
+            self._generation += 1
+            self.source = ""
+            self.draft = None
 
     def extract(self, *, api_key: str | None = None) -> Draft:
-        if not self.source.strip():
+        return self.prepare_extraction(api_key=api_key)()
+
+    def prepare_extraction(self, *, api_key: str | None = None) -> Callable[[], Draft]:
+        """Capture the click-time request before it is queued on a worker."""
+        with self._state_lock:
+            self._generation += 1
+            generation = self._generation
+            source = self.source
+            self.draft = None
+        return lambda: self._extract_snapshot(source, generation, api_key)
+
+    def _extract_snapshot(self, source: str, generation: int, api_key: str | None) -> Draft:
+        with self._state_lock:
+            if generation != self._generation:
+                raise StaleRequestError()
+        if not source.strip():
             raise ServiceError("请先粘贴通知原文。")
-        if len(self.source) > 50000:
+        if len(source) > 50000:
             raise ServiceError("通知超过 50000 字符，请缩小为单条通知；未截断或发送。")
         secret = api_key if api_key is not None else self.credentials.read()
         if not secret:
             raise ServiceError("请先配置个人 DeepSeek API Key。")
         try:
-            result = self.ai.extract(self.source, secret)
+            result = self.ai.extract(source, secret)
         except (ValidationError, ValueError, KeyError, IndexError, TypeError):
-            raise ServiceError("AI 返回结构不合法，请重试；输入已保留。") from None
+            raise ServiceError(
+                "AI 返回 JSON 或结构不合法，请主动重试；输入已保留。", code="invalid_response"
+            ) from None
         if len(result.items) != 1:
             raise ServiceError("本版本需要一条事项、明确的完整截止日期和材料，请检查通知后重试。")
         item = result.items[0]
         if not item.materials:
             raise ServiceError("未提取到明确材料；本版本需要材料齐全的单事项通知。")
-        validate_evidence(item, self.source)
-        self.draft = Draft(id=str(uuid4()), source=self.source, item=item)
-        return self.draft
+        validate_evidence(item, source)
+        with self._state_lock:
+            if generation != self._generation:
+                raise StaleRequestError()
+            self.draft = Draft(id=str(uuid4()), source=source, item=item)
+            return self.draft
 
     def confirm(self, draft_id: str) -> Todo:
-        if self.draft is None or self.draft.id != draft_id:
-            raise ServiceError("请先提取并核对通知。")
-        todo = Todo.model_validate(self.draft.model_dump())
-        try:
-            with self._connect() as connection:
-                connection.execute(
-                    "INSERT OR IGNORE INTO todos VALUES (?, ?)", (todo.id, todo.model_dump_json())
-                )
-        except sqlite3.Error:
-            raise ServiceError("保存失败，草稿已保留；请检查数据库占用或可用空间后重试。") from None
-        self._confirmed_id = todo.id
-        return todo
+        with self._state_lock:
+            if self.draft is None or self.draft.id != draft_id:
+                raise ServiceError("请先提取并核对通知。")
+            todo = Todo.model_validate(self.draft.model_dump())
+            try:
+                with self._connect() as connection:
+                    connection.execute(
+                        "INSERT OR IGNORE INTO todos VALUES (?, ?)",
+                        (todo.id, todo.model_dump_json()),
+                    )
+            except sqlite3.Error:
+                raise ServiceError(
+                    "保存失败，草稿已保留；请检查数据库占用或可用空间后重试。"
+                ) from None
+            self._confirmed_id = todo.id
+            return todo
 
     def list_todos(self) -> list[Todo]:
         try:

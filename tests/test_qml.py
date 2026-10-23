@@ -133,3 +133,58 @@ def test_qml_key_configuration_does_not_leave_secret_in_field(ui, qtbot):
     assert secret_input.property("text") == ""
     assert service.key_configured()
     assert "已安全保存" in control(root, "statusMessage").property("text")
+
+
+def test_qml_error_configuration_and_successful_recovery(qapp, qtbot, tmp_path):
+    attempts = []
+
+    def response(request):
+        attempts.append(request.headers["Authorization"])
+        if request.headers["Authorization"] == "Bearer wrong-key":
+            return httpx.Response(401)
+        return ai_response(request)
+
+    service = NotificationService(
+        tmp_path / "recover.sqlite3", transport=httpx.MockTransport(response)
+    )
+    service.configure_key("wrong-key")
+    engine, controller = create_engine(service)
+    root = engine.rootObjects()[0]
+    try:
+        control(root, "sourceInput").setProperty("text", SOURCE)
+        click(root, "extractButton")
+        qtbot.waitUntil(lambda: "密钥无效" in controller.message)
+        assert not controller.busy
+        assert not controller.canSave
+        assert service.source == SOURCE
+        click(root, "keyButton")
+        qtbot.waitUntil(lambda: control(root, "keyDialog").property("opened"))
+        control(root, "secretInput").setProperty("text", "correct-key")
+        control(root, "keyDialog").accept()
+        click(root, "extractButton")
+        qtbot.waitUntil(lambda: controller.canSave)
+        assert len(attempts) == 2
+        assert service.list_todos() == []
+    finally:
+        controller.wait_for_workers()
+        root.setProperty("allowClose", True)
+        root.close()
+        engine.deleteLater()
+        qapp.processEvents()
+
+
+def test_qml_editing_source_ignores_old_async_completion(ui, qtbot):
+    root, service, started, release = ui
+    control(root, "sourceInput").setProperty("text", SOURCE)
+    click(root, "extractButton")
+    qtbot.waitUntil(started.is_set)
+    control(root, "sourceInput").setProperty("text", "新的通知")
+    qtbot.waitUntil(lambda: service.source == "新的通知")
+    release.set()
+    qtbot.waitUntil(lambda: not control(root, "loadingIndicator").property("running"))
+    # Process the queued worker-finished signal too, not only the immediate input update.
+    qtbot.wait(100)
+    assert service.draft is None
+    assert control(root, "sourceInput").property("text") == "新的通知"
+    assert not control(root, "confirmButton").property("enabled")
+    assert control(root, "statusMessage").property("text") == ""

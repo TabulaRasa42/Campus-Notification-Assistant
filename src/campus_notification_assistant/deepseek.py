@@ -40,26 +40,48 @@ class DeepSeek:
                             ],
                         },
                     )
-                except httpx.TransportError:
+                except (httpx.NetworkError, httpx.TimeoutException):
                     if attempt == 0:
                         continue
                     raise ServiceError(
-                        "网络连接失败或超时，已重试一次；请检查网络后重试。"
+                        "网络连接失败或超时，已重试一次；请检查网络后重试。", code="network_error"
                     ) from None
-                if response.status_code >= 500:
+                except httpx.TransportError:
+                    raise ServiceError(
+                        "网络配置或协议错误，请检查配置后主动重试。", code="transport_error"
+                    ) from None
+                if response.status_code in (500, 502, 503, 504):
                     if attempt == 0:
                         continue
-                    raise ServiceError("DeepSeek 暂时不可用，已重试一次；请稍后重试。")
-                if response.status_code in (401, 403):
-                    raise ServiceError("DeepSeek 密钥无效或权限不足，请重新配置 API Key。")
+                    raise ServiceError(
+                        "DeepSeek 暂时不可用，已重试一次；请稍后重试。",
+                        code="temporary_service_error",
+                    )
+                if response.status_code == 401:
+                    raise ServiceError(
+                        "DeepSeek 密钥无效，请重新配置 API Key。", code="invalid_key"
+                    )
+                if response.status_code == 403:
+                    raise ServiceError(
+                        "DeepSeek 权限不足，请检查账户权限。", code="permission_denied"
+                    )
                 if response.status_code == 402:
-                    raise ServiceError("DeepSeek 余额不足，请检查账户余额。")
+                    raise ServiceError(
+                        "DeepSeek 余额不足，请检查账户余额。", code="insufficient_balance"
+                    )
                 if response.status_code == 429:
-                    raise ServiceError("DeepSeek 请求受限，请稍后主动重试。")
+                    raise ServiceError("DeepSeek 请求受限，请稍后主动重试。", code="rate_limited")
                 if not response.is_success:
-                    raise ServiceError("DeepSeek 拒绝请求，请检查通知与账户配置。")
+                    raise ServiceError(
+                        "DeepSeek 拒绝请求，请检查通知与账户配置。", code="request_rejected"
+                    )
                 choice = response.json()["choices"][0]
                 if choice["finish_reason"] != "stop":
                     raise ServiceError("AI 返回内容不完整，请重新提取；输入已保留。")
-                return Extraction.model_validate_json(choice["message"]["content"])
+                content = choice["message"]["content"]
+                if not isinstance(content, str) or not content.strip():
+                    raise ServiceError(
+                        "AI 返回空内容，请主动重试；输入已保留。", code="empty_content"
+                    )
+                return Extraction.model_validate_json(content)
         raise ServiceError("提取失败，请重试。")

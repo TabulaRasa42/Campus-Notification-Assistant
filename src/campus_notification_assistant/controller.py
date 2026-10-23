@@ -11,13 +11,14 @@ from .service import NotificationService
 
 
 class WorkerSignals(QObject):
-    finished = Signal(str)
+    finished = Signal(int, str)
 
 
 class Worker(QRunnable):
-    def __init__(self, operation: Callable[[], object]) -> None:
+    def __init__(self, operation: Callable[[], object], request_id: int) -> None:
         super().__init__()
         self.operation = operation
+        self.request_id = request_id
         self.signals = WorkerSignals()
 
     def run(self) -> None:
@@ -29,7 +30,7 @@ class Worker(QRunnable):
         except Exception:  # noqa: BLE001 - Qt worker must not leak exceptions or secrets
             # Never expose exception/HTTP bodies, which may contain credentials or notice data.
             error = "操作失败，输入与草稿已保留；请检查配置后重试。"
-        self.signals.finished.emit(error)
+        self.signals.finished.emit(self.request_id, error)
 
 
 class Controller(QObject):
@@ -46,6 +47,7 @@ class Controller(QObject):
         self._configured = False
         self._worker: Worker | None = None
         self._operation = ""
+        self._request_id = 0
         try:
             self._configured = service.key_configured()
             self._todos = service.list_todos()
@@ -78,7 +80,7 @@ class Controller(QObject):
 
     @Property(bool, notify=changed)
     def readOnly(self) -> bool:
-        return self._busy or self._selected is not None or self.service.draft is not None
+        return self._selected is not None or self.service.draft is not None or (self._busy and self._operation == "save")
 
     @Property(bool, notify=changed)
     def canSave(self) -> bool:
@@ -113,10 +115,15 @@ class Controller(QObject):
 
     @Slot(str)
     def updateSource(self, text: str) -> None:
-        if self._busy or self._selected is not None:
+        if self._selected is not None or (self._busy and self._operation == "save"):
             return
         try:
+            changed = text != self.service.source
             self.service.set_source(text)
+            if changed:
+                self._request_id += 1
+                self._busy = False
+                self._message = ""
         except ServiceError as exc:
             self._message = str(exc)
         self.changed.emit()
@@ -139,15 +146,16 @@ class Controller(QObject):
         self._busy = True
         self._operation = name
         self._message = "正在提取，请稍候…" if name == "extract" else "正在保存…"
-        self._worker = Worker(operation)
+        self._request_id += 1
+        self._worker = Worker(operation, self._request_id)
         self._worker.signals.finished.connect(self._finished)
         self.changed.emit()
         self.pool.start(self._worker)
 
     @Slot()
     def extract(self) -> None:
-        if self._selected is None:
-            self._start(self.service.extract, "extract")
+        if self._selected is None and not self._busy:
+            self._start(self.service.prepare_extraction(), "extract")
 
     @Slot()
     def confirm(self) -> None:
@@ -155,8 +163,10 @@ class Controller(QObject):
             draft_id = self.service.draft.id
             self._start(lambda: self.service.confirm(draft_id), "save")
 
-    @Slot(str)
-    def _finished(self, error: str) -> None:
+    @Slot(int, str)
+    def _finished(self, request_id: int, error: str) -> None:
+        if request_id != self._request_id:
+            return
         self._busy = False
         self._message = error or (
             "请逐项核对右侧信息与原文依据，确认无误后保存。"
@@ -171,8 +181,10 @@ class Controller(QObject):
 
     @Slot()
     def clearDraft(self) -> None:
-        if self._busy:
+        if self._busy and self._operation == "save":
             return
+        self._request_id += 1
+        self._busy = False
         self.service.discard(confirmed=True)
         self._selected = None
         self._message = ""

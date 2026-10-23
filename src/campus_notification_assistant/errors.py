@@ -1,5 +1,12 @@
-"""可安全展示给用户的错误，不包含外部响应或密钥。"""
+"""可安全展示的错误；不携带 HTTP 响应或秘密。"""
 
 
 class ServiceError(Exception):
-    pass
+    def __init__(self, message: str, *, code: str = "operation_failed") -> None:
+        super().__init__(message)
+        self.code = code
+
+
+class StaleRequestError(ServiceError):
+    def __init__(self) -> None:
+        super().__init__("提取请求已过期，请查看当前通知。", code="stale_request")
