@@ -45,6 +45,8 @@ class Controller(QObject):
         self._message = ""
         self._selected: Todo | None = None
         self._todos: list[Todo] = []
+        self._duplicates: list[Todo] = []
+        self._duplicate_source: str | None = None
         self._configured = False
         self._worker: Worker | None = None
         self._operation = ""
@@ -81,7 +83,11 @@ class Controller(QObject):
 
     @Property(bool, notify=changed)
     def readOnly(self) -> bool:
-        return self._selected is not None or self.service.draft is not None or (self._busy and self._operation == "save")
+        return (
+            self._selected is not None
+            or self.service.draft is not None
+            or (self._busy and self._operation == "save")
+        )
 
     @Property(bool, notify=changed)
     def canSave(self) -> bool:
@@ -209,11 +215,56 @@ class Controller(QObject):
             self._message = str(exc)
         self.changed.emit()
 
+    @Property(bool, notify=changed)
+    def duplicatePending(self) -> bool:
+        return self._duplicate_source is not None
+
+    @Property("QVariantList", notify=changed)  # type: ignore[arg-type]
+    def duplicateTodos(self) -> list[dict[str, str]]:
+        return [{"id": todo.id, "title": todo.item.action.value} for todo in self._duplicates]
+
+    def _check_duplicates(self) -> bool:
+        self._duplicates = self.service.find_duplicates()
+        self._duplicate_source = self.service.source if self._duplicates else None
+        return bool(self._duplicates)
+
+    @Slot()
+    def cancelDuplicate(self) -> None:
+        self._duplicate_source = None
+        self.changed.emit()
+
+    @Slot()
+    def reextractDuplicate(self) -> None:
+        if self._busy or self._selected is not None:
+            return
+        if self._duplicate_source != self.service.source:
+            self.cancelDuplicate()
+            return
+        self._duplicate_source = None
+        self._start(self.service.prepare_extraction(), "extract")
+
+    @Slot(str)
+    def openDuplicate(self, todo_id: str) -> None:
+        if self._busy or not any(todo.id == todo_id for todo in self._duplicates):
+            return
+        try:
+            todo = self.service.get_todo(todo_id)
+            if todo.source != self.service.source:
+                return
+            self.service.discard(confirmed=True)
+            self._selected = todo
+            self._duplicate_source = None
+            self._message = "待办及原文已从本地数据库读取。"
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
     @Slot(str)
     def replaceSource(self, text: str) -> None:
         if self._busy or self._selected:
             return
         self.service.set_source(text, discard=True)
+        self._check_duplicates()
         self._message = "原文已修改，旧提取结果已失效，请重新提取。"
         self.changed.emit()
 
@@ -228,6 +279,7 @@ class Controller(QObject):
                 self._request_id += 1
                 self._busy = False
                 self._message = ""
+            self._check_duplicates()
         except ServiceError as exc:
             self._message = str(exc)
         self.changed.emit()
@@ -259,6 +311,14 @@ class Controller(QObject):
     @Slot()
     def extract(self) -> None:
         if self._selected is None and not self._busy:
+            try:
+                if self._check_duplicates():
+                    self.changed.emit()
+                    return
+            except ServiceError as exc:
+                self._message = str(exc)
+                self.changed.emit()
+                return
             self._start(self.service.prepare_extraction(), "extract")
 
     @Slot()
@@ -272,10 +332,13 @@ class Controller(QObject):
         if request_id != self._request_id:
             return
         self._busy = False
-        self._message = error or (
+        extract_message = (
             "请逐项核对右侧信息与原文依据，确认无误后保存。"
-            if self._operation == "extract"
-            else "已保存，可从待办清单打开。"
+            if self.service.draft is not None
+            else "未发现可办理事项，未生成待办；原文已保留。"
+        )
+        self._message = error or (
+            extract_message if self._operation == "extract" else "已保存，可从待办清单打开。"
         )
         try:
             self._todos = self.service.list_todos()
@@ -290,6 +353,8 @@ class Controller(QObject):
         self._request_id += 1
         self._busy = False
         self.service.discard(confirmed=True)
+        self._duplicate_source = None
+        self._duplicates = []
         self._selected = None
         self._message = ""
         self.changed.emit()

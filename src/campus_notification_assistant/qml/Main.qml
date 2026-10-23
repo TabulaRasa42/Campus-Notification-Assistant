@@ -287,6 +287,57 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: backend
+        function onChanged() {
+            if (backend.duplicatePending && !duplicateListDialog.visible) duplicateDialog.open()
+            else if (!backend.duplicatePending) duplicateDialog.close()
+        }
+    }
+    Dialog {
+        id: duplicateDialog
+        objectName: "duplicateDialog"
+        title: "这条通知已有待办"
+        anchors.centerIn: parent
+        modal: true
+        width: 480
+        closePolicy: Popup.NoAutoClose
+        contentItem: ColumnLayout {
+            spacing: 16
+            Label { text: "找到 " + backend.duplicateTodos.length + " 条已有待办。可直接回查，也可重新提取并另行确认保存。"; wrapMode: Text.Wrap; Layout.fillWidth: true }
+            Button { objectName: "duplicateViewButton"; text: "查看已有待办"; onClicked: { duplicateDialog.close(); duplicateListDialog.open() } }
+            Button { objectName: "duplicateContinueButton"; text: "继续重新提取"; onClicked: backend.reextractDuplicate() }
+            Button { objectName: "duplicateCancelButton"; text: "取消本次操作"; onClicked: backend.cancelDuplicate() }
+        }
+    }
+    Dialog {
+        id: duplicateListDialog
+        objectName: "duplicateListDialog"
+        property int matchCount: backend.duplicateTodos.length
+        title: "该通知已有待办 · " + matchCount
+        anchors.centerIn: parent
+        modal: true
+        width: 560
+        height: Math.min(480, 160 + matchCount * 56)
+        standardButtons: Dialog.Close
+        onRejected: backend.cancelDuplicate()
+        contentItem: ScrollView {
+            clip: true
+            ListView {
+                id: duplicateList
+                model: backend.duplicateTodos
+                spacing: 8
+                delegate: Button {
+                    objectName: "duplicateTodoButton"
+                    required property var modelData
+                    width: duplicateList.width
+                    text: modelData.title + " · 查看原文与依据"
+                    onClicked: { backend.openDuplicate(modelData.id); duplicateListDialog.close() }
+                }
+            }
+        }
+    }
+
     Dialog {
         id: correctionDialog
         objectName: "correctionDialog"

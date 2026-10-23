@@ -319,6 +319,11 @@ class NotificationService:
         except (sqlite3.Error, ValidationError):
             raise ServiceError("无法读取待办，请检查数据库；数据未被覆盖。") from None
 
+    def find_duplicates(self, source: str | None = None) -> list[Todo]:
+        """Return every saved Todo for the exact, unmodified notification text."""
+        text = self.source if source is None else source
+        return [todo for todo in self.list_todos() if todo.source == text]
+
     def get_todo(self, todo_id: str) -> Todo:
         try:
             with self._connect() as connection:
