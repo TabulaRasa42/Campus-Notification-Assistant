@@ -6,7 +6,7 @@ from typing import Any
 from PySide6.QtCore import Property, QObject, QRunnable, QThreadPool, Signal, Slot
 
 from .errors import ServiceError
-from .models import Todo
+from .models import CitedText, Deadline, Todo
 from .service import NotificationService
 
 
@@ -35,6 +35,7 @@ class Worker(QRunnable):
 
 class Controller(QObject):
     changed = Signal()
+    evidenceSelected = Signal(int, int)
 
     def __init__(self, service: NotificationService) -> None:
         super().__init__()
@@ -89,12 +90,36 @@ class Controller(QObject):
             and self._selected is None
             and self.service.draft is not None
             and self.service.has_unsaved_changes
+            and self.service.draft.item.action.review != "invalid"
+            and self.service.draft.item.deadline.review != "invalid"
+            and all(field.review != "invalid" for field in self.service.draft.item.materials)
         )
 
     @Property("QVariantMap", notify=changed)  # type: ignore[arg-type]
     def resultData(self) -> dict[str, Any]:
         result = self._selected or self.service.draft
-        return result.item.model_dump(mode="json") if result else {}
+        if result is None:
+            return {}
+
+        def display(field: CitedText | Deadline) -> dict[str, Any]:
+            data = field.model_dump(mode="json")
+            label = "用户补充内容" if field.origin == "user" else "原文提取"
+            if field.review == "invalid":
+                label += " · 待核对：无效或位置不明的原文依据"
+            if isinstance(field, Deadline):
+                data["value"] = field.date.isoformat() if field.date else field.raw
+                if field.status == "missing":
+                    data["value"] = "原文未提及"
+                elif field.status == "uncertain":
+                    label += " · 待确认时间"
+            data["label"] = label
+            return data
+
+        return {
+            "action": display(result.item.action),
+            "deadline": display(result.item.deadline),
+            "materials": [display(m) for m in result.item.materials],
+        }
 
     @Property("QVariantList", notify=changed)  # type: ignore[arg-type]
     def todos(self) -> list[dict[str, str]]:
@@ -102,7 +127,13 @@ class Controller(QObject):
             {
                 "id": todo.id,
                 "title": todo.item.action.value,
-                "date": todo.item.deadline.date.isoformat(),
+                "date": todo.item.deadline.date.isoformat()
+                if todo.item.deadline.date
+                else (
+                    "待确认时间：" + todo.item.deadline.raw
+                    if todo.item.deadline.status == "uncertain"
+                    else "原文未提及"
+                ),
             }
             for todo in self._todos
         ]
@@ -112,6 +143,79 @@ class Controller(QObject):
         if self._selected or (self.service.draft and not self.service.has_unsaved_changes):
             return "已保存的待办"
         return "提取结果 · 待核对"
+
+    def _field(self, name: str) -> CitedText | Deadline | None:
+        result = self._selected or self.service.draft
+        if result is None:
+            return None
+        if name == "action":
+            return result.item.action
+        if name == "deadline":
+            return result.item.deadline
+        if name.startswith("materials."):
+            try:
+                index = int(name.split(".")[1])
+                return result.item.materials[index] if index >= 0 else None
+            except (ValueError, IndexError):
+                return None
+        return None
+
+    @Slot(str)
+    def locateEvidence(self, name: str) -> None:
+        field = self._field(name)
+        if field is None or field.origin == "user" or field.review != "matched":
+            self._message = "该字段暂无可定位的有效原文依据。"
+            self.changed.emit()
+            return
+        result = self._selected or self.service.draft
+        if result is None:
+            return
+        source = result.source
+        start, end = field.evidence_start, field.evidence_end
+        if start is None or end is None:
+            if not field.evidence or source.count(field.evidence) != 1:
+                return
+            start = source.index(field.evidence)
+            end = start + len(field.evidence)
+        self.evidenceSelected.emit(
+            len(source[:start].encode("utf-16-le")) // 2, len(source[:end].encode("utf-16-le")) // 2
+        )
+
+    @Slot(str, str, bool, bool, int, int)
+    def correctField(
+        self, name: str, value: str, user: bool, remove: bool, start: int, end: int
+    ) -> None:
+        if self._busy or self._selected or self.service.draft is None:
+            return
+        source = self.service.source
+
+        def python_index(position: int) -> int:
+            return len(
+                source.encode("utf-16-le")[: position * 2].decode("utf-16-le", errors="ignore")
+            )
+
+        try:
+            self.service.correct_field(
+                self.service.draft.id,
+                name,
+                value,
+                user_supplied=user,
+                remove=remove,
+                evidence_start=python_index(start),
+                evidence_end=python_index(end),
+            )
+            self._message = "修正已更新，请继续核对。"
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
+    @Slot(str)
+    def replaceSource(self, text: str) -> None:
+        if self._busy or self._selected:
+            return
+        self.service.set_source(text, discard=True)
+        self._message = "原文已修改，旧提取结果已失效，请重新提取。"
+        self.changed.emit()
 
     @Slot(str)
     def updateSource(self, text: str) -> None:

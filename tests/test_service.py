@@ -52,14 +52,6 @@ def test_confirmed_todo_survives_restart_with_source_and_evidence(tmp_path):
 @pytest.mark.parametrize(
     "items",
     [
-        [{**RESULT["items"][0], "action": {"value": "报名", "evidence": "不存在的原文"}}],
-        [
-            {
-                **RESULT["items"][0],
-                "deadline": {"date": "2027-11-15", "evidence": "2026年11月15日前"},
-            }
-        ],
-        [{**RESULT["items"][0], "materials": [{"value": "身份证", "evidence": "学生证明"}]}],
         [{**RESULT["items"][0], "action": {"value": "", "evidence": "报名"}}],
         [RESULT["items"][0], RESULT["items"][0]],
     ],
@@ -202,8 +194,6 @@ def test_draft_discard_requires_confirmation_and_source_change_invalidates_resul
         "",
         "{}",
         "null",
-        '{"items":[]}',
-        json.dumps({"items": [{**RESULT["items"][0], "materials": []}]}),
         json.dumps(
             {
                 "items": [

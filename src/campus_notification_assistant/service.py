@@ -7,6 +7,7 @@ from contextlib import contextmanager
 from datetime import date
 from pathlib import Path
 from threading import RLock
+from typing import TypeVar
 from uuid import uuid4
 
 import httpx
@@ -15,26 +16,85 @@ from pydantic import ValidationError
 from .credentials import DEFAULT_NAMESPACE, Credentials
 from .deepseek import DeepSeek
 from .errors import ServiceError, StaleRequestError
-from .models import Draft, Item, Todo
+from .models import CitedText, Deadline, Draft, Item, Todo
+
+Citation = TypeVar("Citation", CitedText, Deadline)
 
 
 def validate_evidence(item: Item, source: str) -> None:
-    citations = [
-        item.action.evidence,
-        item.deadline.evidence,
-        *(material.evidence for material in item.materials),
-    ]
-    if any(evidence not in source for evidence in citations):
-        raise ServiceError("原文依据无法匹配，请保留原文并重新提取。")
-    if any(material.value not in material.evidence for material in item.materials):
-        raise ServiceError("材料与原文依据不符，请重新提取。")
-    dates = re.findall(r"(\d{4})[年/\-](\d{1,2})[月/\-](\d{1,2})(?:日)?", item.deadline.evidence)
-    try:
-        matches = {date(int(y), int(m), int(d)) for y, m, d in dates}
-    except ValueError:
-        raise ServiceError("原文日期无效，请核对通知。") from None
-    if item.deadline.date not in matches:
-        raise ServiceError("截止日期与原文依据不符；本版本要求明确的完整年月日。")
+    fields: list[CitedText | Deadline] = [item.action, item.deadline, *item.materials]
+    if any(field.review == "invalid" for field in fields):
+        raise ServiceError("仍有无效原文依据，请选取真实依据、标为用户补充内容或移除字段。")
+
+
+def normalize_item(item: Item, source: str) -> Item:
+    def citation(field: Citation) -> Citation:
+        if field.origin == "user":
+            return field.model_copy(
+                update={
+                    "review": "matched",
+                    "evidence": "",
+                    "evidence_start": None,
+                    "evidence_end": None,
+                }
+            )
+        text = field.evidence
+        start, end = field.evidence_start, field.evidence_end
+        exact = (
+            start is not None
+            and end is not None
+            and 0 <= start < end <= len(source)
+            and source[start:end] == text
+        )
+        if start is None and end is None and text and source.count(text) == 1:
+            start = source.index(text)
+            end = start + len(text)
+            exact = True
+        return field.model_copy(
+            update={
+                "review": "matched" if exact else "invalid",
+                "evidence_start": start if exact else None,
+                "evidence_end": end if exact else None,
+            }
+        )
+
+    action = citation(item.action)
+    materials = tuple(
+        citation(m).model_copy(update={"review": "invalid"})
+        if m.origin != "user" and m.value not in m.evidence
+        else citation(m)
+        for m in item.materials
+    )
+    deadline = item.deadline
+    if not deadline.evidence and deadline.date is None and not deadline.raw:
+        deadline = deadline.model_copy(
+            update={"status": "missing", "review": "missing", "precision": "unknown"}
+        )
+    else:
+        deadline = citation(deadline)
+        raw = deadline.raw if deadline.origin == "user" else deadline.evidence
+        # Only an explicit full date associated with a deadline may be normalized.
+        candidates: set[date] = set()
+        for match in re.finditer(r"(\d{4})[年/\-](\d{1,2})[月/\-](\d{1,2})(?:日)?", source):
+            following = re.split(r"[。；;\n]", source[match.end() :], maxsplit=1)[0][:12]
+            preceding = re.split(r"[。；;\n]", source[: match.start()])[-1][-12:]
+            if re.search(r"截止|最迟|之前|以前|前|提交|交齐|报送", following) or re.search(
+                r"截止|最迟", preceding
+            ):
+                try:
+                    candidates.add(date(*(int(part) for part in match.groups())))
+                except ValueError:
+                    pass
+        certain = deadline.date is not None and candidates == {deadline.date}
+        if deadline.status == "uncertain" or not certain:
+            deadline = deadline.model_copy(
+                update={"date": None, "raw": raw, "status": "uncertain", "precision": "unknown"}
+            )
+        else:
+            deadline = deadline.model_copy(
+                update={"raw": raw, "status": "certain", "precision": "date"}
+            )
+    return Item(action=action, deadline=deadline, materials=materials)
 
 
 class NotificationService:
@@ -103,10 +163,10 @@ class NotificationService:
             self.source = ""
             self.draft = None
 
-    def extract(self, *, api_key: str | None = None) -> Draft:
+    def extract(self, *, api_key: str | None = None) -> Draft | None:
         return self.prepare_extraction(api_key=api_key)()
 
-    def prepare_extraction(self, *, api_key: str | None = None) -> Callable[[], Draft]:
+    def prepare_extraction(self, *, api_key: str | None = None) -> Callable[[], Draft | None]:
         """Capture the click-time request before it is queued on a worker."""
         with self._state_lock:
             self._generation += 1
@@ -115,7 +175,7 @@ class NotificationService:
             self.draft = None
         return lambda: self._extract_snapshot(source, generation, api_key)
 
-    def _extract_snapshot(self, source: str, generation: int, api_key: str | None) -> Draft:
+    def _extract_snapshot(self, source: str, generation: int, api_key: str | None) -> Draft | None:
         with self._state_lock:
             if generation != self._generation:
                 raise StaleRequestError()
@@ -132,22 +192,111 @@ class NotificationService:
             raise ServiceError(
                 "AI 返回 JSON 或结构不合法，请主动重试；输入已保留。", code="invalid_response"
             ) from None
+        with self._state_lock:
+            if generation != self._generation:
+                raise StaleRequestError()
+            if not result.items:
+                self.draft = None
+                return None
         if len(result.items) != 1:
-            raise ServiceError("本版本需要一条事项、明确的完整截止日期和材料，请检查通知后重试。")
-        item = result.items[0]
-        if not item.materials:
-            raise ServiceError("未提取到明确材料；本版本需要材料齐全的单事项通知。")
-        validate_evidence(item, source)
+            raise ServiceError("本次仅支持一条办理事项，请分条提取。")
+        received = result.items[0]
+        received = received.model_copy(
+            update={
+                "action": received.action.model_copy(update={"origin": "extracted"}),
+                "deadline": received.deadline.model_copy(update={"origin": "extracted"}),
+                "materials": tuple(
+                    m.model_copy(update={"origin": "extracted"}) for m in received.materials
+                ),
+            }
+        )
+        item = normalize_item(received, source)
         with self._state_lock:
             if generation != self._generation:
                 raise StaleRequestError()
             self.draft = Draft(id=str(uuid4()), source=source, item=item)
             return self.draft
 
+    def correct_field(
+        self,
+        draft_id: str,
+        field: str,
+        value: str,
+        *,
+        evidence_start: int | None = None,
+        evidence_end: int | None = None,
+        user_supplied: bool = False,
+        remove: bool = False,
+    ) -> Draft:
+        with self._state_lock:
+            if self.draft is None or self.draft.id != draft_id or self._confirmed_id == draft_id:
+                raise ServiceError("请先提取未保存的草稿。")
+            item = self.draft.item
+            old: CitedText | Deadline
+            data = item.model_dump()
+            if field == "action":
+                if remove or not value.strip():
+                    raise ServiceError("事项内容不能为空。")
+                old = item.action
+            elif field == "deadline":
+                old = item.deadline
+            elif field.startswith("materials."):
+                try:
+                    index = int(field.split(".")[1])
+                    if index < 0:
+                        raise IndexError
+                    old = item.materials[index]
+                except (ValueError, IndexError):
+                    raise ServiceError("材料不存在。") from None
+            else:
+                raise ServiceError("字段不存在。")
+            if remove:
+                replacement = Deadline(
+                    status="missing", review="missing", precision="unknown"
+                ).model_dump()
+            else:
+                if not value.strip():
+                    raise ServiceError("内容不能为空。")
+                evidence = ""
+                if not user_supplied:
+                    if (
+                        evidence_start is None
+                        or evidence_end is None
+                        or not 0 <= evidence_start < evidence_end <= len(self.source)
+                    ):
+                        raise ServiceError("请选取真实原文依据或明确标为用户补充内容。")
+                    evidence = self.source[evidence_start:evidence_end]
+                replacement = old.model_dump()
+                replacement.update(
+                    origin="user" if user_supplied else "extracted",
+                    evidence=evidence,
+                    evidence_start=evidence_start,
+                    evidence_end=evidence_end,
+                )
+                if field == "deadline":
+                    replacement.update(
+                        raw=value, date=None, status="uncertain", precision="unknown"
+                    )
+                else:
+                    replacement["value"] = value
+            if field.startswith("materials."):
+                entries = list(data["materials"])
+                if remove:
+                    entries.pop(index)
+                else:
+                    entries[index] = replacement
+                data["materials"] = entries
+            else:
+                data[field] = replacement
+            corrected = normalize_item(Item.model_validate(data), self.source)
+            self.draft = self.draft.model_copy(update={"item": corrected})
+            return self.draft
+
     def confirm(self, draft_id: str) -> Todo:
         with self._state_lock:
             if self.draft is None or self.draft.id != draft_id:
                 raise ServiceError("请先提取并核对通知。")
+            validate_evidence(self.draft.item, self.draft.source)
             todo = Todo.model_validate(self.draft.model_dump())
             try:
                 with self._connect() as connection:

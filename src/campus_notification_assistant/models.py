@@ -1,9 +1,9 @@
 """已校验的单事项提取结果与持久化待办。"""
 
 from datetime import date as CalendarDate
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 NonBlank = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
@@ -14,18 +14,50 @@ class ValueModel(BaseModel):
 
 class CitedText(ValueModel):
     value: NonBlank
-    evidence: NonBlank
+    evidence: str = ""
+    origin: Literal["extracted", "user"] = "extracted"
+    review: Literal["matched", "invalid", "missing"] = "matched"
+    evidence_start: int | None = None
+    evidence_end: int | None = None
 
 
 class Deadline(ValueModel):
-    date: CalendarDate = Field(strict=True)
-    evidence: NonBlank
+    date: CalendarDate | None = Field(default=None, strict=True)
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def date_only(cls, value: object) -> object:
+        if isinstance(value, str):
+            if len(value) != 10:
+                raise ValueError("Date must contain only YYYY-MM-DD")
+            return CalendarDate.fromisoformat(value)
+        return value
+
+    evidence: str = ""
+    raw: str = ""
+    status: Literal["certain", "uncertain", "missing"] = "certain"
+    precision: Literal["date", "unknown"] = "date"
+    origin: Literal["extracted", "user"] = "extracted"
+    review: Literal["matched", "invalid", "missing"] = "matched"
+    evidence_start: int | None = None
+    evidence_end: int | None = None
 
 
 class Item(ValueModel):
     action: CitedText
-    deadline: Deadline
-    materials: tuple[CitedText, ...]
+    deadline: Deadline = Field(
+        default_factory=lambda: Deadline(status="missing", review="missing", precision="unknown")
+    )
+    materials: tuple[CitedText, ...] = ()
+
+    @field_validator("deadline", mode="before")
+    @classmethod
+    def missing_deadline(cls, value: object) -> object:
+        return (
+            {"status": "missing", "review": "missing", "precision": "unknown"}
+            if value is None
+            else value
+        )
 
 
 class Extraction(ValueModel):

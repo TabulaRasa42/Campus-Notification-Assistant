@@ -45,6 +45,9 @@ ApplicationWindow {
     }
 
     component CitedField: ColumnLayout {
+        id: citedField
+        property string fieldKey: ""
+        property string statusLabel: ""
         property string heading: ""
         property string content: ""
         property string evidence: ""
@@ -59,16 +62,37 @@ ApplicationWindow {
             textFormat: Text.PlainText
             font.pixelSize: 18
             font.weight: Font.DemiBold
+            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: backend.locateEvidence(citedField.fieldKey) }
             wrapMode: Text.Wrap
             Layout.fillWidth: true
         }
         Label {
             objectName: evidenceName
-            text: "原文依据：" + evidence
+            text: statusLabel + "\n原文依据：" + (evidence || "原文未提及")
             textFormat: Text.PlainText
             color: "#525252"
             wrapMode: Text.Wrap
             Layout.fillWidth: true
+        }
+        Button {
+            objectName: citedField.fieldKey === "action" ? "actionCorrection" : "correction_" + citedField.fieldKey
+            text: "修正 / 选择依据"
+            visible: backend.unsaved && window.hasResult
+            enabled: !backend.busy
+            onClicked: {
+                correctionDialog.fieldKey = citedField.fieldKey
+                correctionValue.text = citedField.content
+                supplement.checked = false
+                correctionDialog.open()
+            }
+        }
+    }
+
+    Connections {
+        target: backend
+        function onEvidenceSelected(start, end) {
+            sourceInput.forceActiveFocus()
+            sourceInput.select(start, end)
         }
     }
 
@@ -106,7 +130,10 @@ ApplicationWindow {
                 ColumnLayout {
                     anchors.fill: parent
                     spacing: 16
-                    Label { text: "通知原文"; font.pixelSize: 18; font.bold: true }
+                    RowLayout {
+                        Label { text: "通知原文"; font.pixelSize: 18; font.bold: true }
+                        Button { text: "修改原文"; enabled: !backend.busy && window.hasResult && backend.unsaved; onClicked: { sourceEdit.text = backend.sourceText; sourceEditDialog.open() } }
+                    }
                     Label {
                         text: "保留完整内容，逐项对照右侧信息。"
                         color: "#525252"
@@ -125,7 +152,7 @@ ApplicationWindow {
                             persistentSelection: true
                             textFormat: TextEdit.PlainText
                             wrapMode: TextEdit.Wrap
-                            placeholderText: "在这里粘贴通知全文…\n\n本次支持：一条事项、完整截止年月日、明确所需材料。"
+                            placeholderText: "在这里粘贴通知全文…\n\n支持一条办理事项；缺失信息与待确认时间可保存。"
                             onTextChanged: if (!readOnly) backend.updateSource(text)
                         }
                     }
@@ -159,14 +186,18 @@ ApplicationWindow {
                             CitedField {
                                 visible: window.hasResult
                                 heading: "事项"
+                                fieldKey: "action"
+                                statusLabel: backend.resultData.action ? backend.resultData.action.label : ""
                                 content: backend.resultData.action ? backend.resultData.action.value : ""
                                 evidence: backend.resultData.action ? backend.resultData.action.evidence : ""
                                 valueName: "actionValue"
                             }
                             CitedField {
                                 visible: window.hasResult
-                                heading: "截止日期 · 仅日期，无默认时刻"
-                                content: backend.resultData.deadline ? backend.resultData.deadline.date : ""
+                                heading: "截止时间 · 不推算，无默认时刻"
+                                fieldKey: "deadline"
+                                statusLabel: backend.resultData.deadline ? backend.resultData.deadline.label : ""
+                                content: backend.resultData.deadline ? backend.resultData.deadline.value : ""
                                 evidence: backend.resultData.deadline ? backend.resultData.deadline.evidence : ""
                                 valueName: "deadlineValue"
                                 evidenceName: "deadlineEvidence"
@@ -176,10 +207,14 @@ ApplicationWindow {
                                 spacing: 16
                                 Layout.fillWidth: true
                                 Label { text: "所需材料"; font.pixelSize: 12; color: "#525252" }
+                                Label { visible: (backend.resultData.materials || []).length === 0; text: "原文未提及" }
                                 Repeater {
                                     model: backend.resultData.materials || []
                                     CitedField {
                                         required property var modelData
+                                        required property int index
+                                        fieldKey: "materials." + index
+                                        statusLabel: modelData.label
                                         content: modelData.value
                                         evidence: modelData.evidence
                                     }
@@ -252,6 +287,38 @@ ApplicationWindow {
         }
     }
 
+    Dialog {
+        id: correctionDialog
+        objectName: "correctionDialog"
+        property string fieldKey: ""
+        title: "修正字段与依据"
+        anchors.centerIn: parent
+        modal: true
+        width: 460
+        standardButtons: Dialog.Save | Dialog.Cancel
+        ColumnLayout {
+            width: parent.width
+            Label { text: "先在左侧原文选取真实依据，再保存；或明确标为用户补充内容。"; wrapMode: Text.Wrap; Layout.fillWidth: true }
+            TextField { id: correctionValue; objectName: "correctionValue"; Layout.fillWidth: true }
+            CheckBox { id: supplement; objectName: "supplement"; text: "这是用户补充内容" }
+            Button {
+                text: "移除此字段"
+                enabled: correctionDialog.fieldKey !== "action"
+                onClicked: { backend.correctField(correctionDialog.fieldKey, "", false, true, 0, 0); correctionDialog.close() }
+            }
+        }
+        onAccepted: backend.correctField(fieldKey, correctionValue.text, supplement.checked, false, sourceInput.selectionStart, sourceInput.selectionEnd)
+    }
+    Dialog {
+        id: sourceEditDialog
+        title: "修改原文将使旧提取结果失效"
+        anchors.centerIn: parent
+        width: 600
+        modal: true
+        standardButtons: Dialog.Save | Dialog.Cancel
+        TextArea { id: sourceEdit; width: parent.width; wrapMode: TextEdit.Wrap; selectByMouse: true }
+        onAccepted: backend.replaceSource(sourceEdit.text)
+    }
     Dialog {
         id: keyDialog
         objectName: "keyDialog"
