@@ -96,9 +96,7 @@ class Controller(QObject):
             and self._selected is None
             and self.service.draft is not None
             and self.service.has_unsaved_changes
-            and self.service.draft.item.action.review != "invalid"
-            and self.service.draft.item.deadline.review != "invalid"
-            and all(field.review != "invalid" for field in self.service.draft.item.materials)
+            and self.service.draft.item.evidence_ready
         )
 
     @Property("QVariantMap", notify=changed)  # type: ignore[arg-type]

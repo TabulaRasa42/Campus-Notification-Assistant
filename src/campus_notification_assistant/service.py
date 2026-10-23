@@ -19,11 +19,11 @@ from .errors import ServiceError, StaleRequestError
 from .models import CitedText, Deadline, Draft, Item, Todo
 
 Citation = TypeVar("Citation", CitedText, Deadline)
+FULL_DATE = re.compile(r"(\d{4})[年/\-](\d{1,2})[月/\-](\d{1,2})(?:日)?")
 
 
-def validate_evidence(item: Item, source: str) -> None:
-    fields: list[CitedText | Deadline] = [item.action, item.deadline, *item.materials]
-    if any(field.review == "invalid" for field in fields):
+def validate_evidence(item: Item) -> None:
+    if not item.evidence_ready:
         raise ServiceError("仍有无效原文依据，请选取真实依据、标为用户补充内容或移除字段。")
 
 
@@ -75,17 +75,34 @@ def normalize_item(item: Item, source: str) -> Item:
         raw = deadline.raw if deadline.origin == "user" else deadline.evidence
         # Only an explicit full date associated with a deadline may be normalized.
         candidates: set[date] = set()
-        for match in re.finditer(r"(\d{4})[年/\-](\d{1,2})[月/\-](\d{1,2})(?:日)?", source):
-            following = re.split(r"[。；;\n]", source[match.end() :], maxsplit=1)[0][:12]
-            preceding = re.split(r"[。；;\n]", source[: match.start()])[-1][-12:]
-            if re.search(r"截止|最迟|之前|以前|前|提交|交齐|报送", following) or re.search(
-                r"截止|最迟", preceding
+        for match in FULL_DATE.finditer(source):
+            following = re.split(r"[。；;，,\n]", source[match.end() :], maxsplit=1)[0][:12]
+            preceding = re.split(r"[。；;，,\n]", source[: match.start()])[-1][-12:]
+            # Submission alone is not a deadline; do not cross a clause boundary
+            # from an activity start into a later request to submit something.
+            if re.search(r"截止|最迟|之前|以前|前|为止", following) or re.search(
+                r"截止|截至|最迟", preceding
             ):
                 try:
                     candidates.add(date(*(int(part) for part in match.groups())))
                 except ValueError:
                     pass
-        certain = deadline.date is not None and candidates == {deadline.date}
+        quoted_dates = set()
+        for match in FULL_DATE.finditer(deadline.evidence):
+            try:
+                quoted_dates.add(date(*(int(part) for part in match.groups())))
+            except ValueError:
+                pass
+        relative = re.search(
+            r"[本上下]周|[本上下]月|今年|明年|今天|明天|后天|昨日|今日|明日", deadline.evidence
+        )
+        certain = (
+            deadline.review == "matched"
+            and deadline.date is not None
+            and deadline.date in quoted_dates
+            and candidates == {deadline.date}
+            and not relative
+        )
         if deadline.status == "uncertain" or not certain:
             deadline = deadline.model_copy(
                 update={"date": None, "raw": raw, "status": "uncertain", "precision": "unknown"}
@@ -296,7 +313,7 @@ class NotificationService:
         with self._state_lock:
             if self.draft is None or self.draft.id != draft_id:
                 raise ServiceError("请先提取并核对通知。")
-            validate_evidence(self.draft.item, self.draft.source)
+            validate_evidence(self.draft.item)
             todo = Todo.model_validate(self.draft.model_dump())
             try:
                 with self._connect() as connection:

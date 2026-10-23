@@ -50,6 +50,11 @@ class Item(ValueModel):
     )
     materials: tuple[CitedText, ...] = ()
 
+    @property
+    def evidence_ready(self) -> bool:
+        fields: tuple[CitedText | Deadline, ...] = (self.action, self.deadline, *self.materials)
+        return all(field.review != "invalid" for field in fields)
+
     @field_validator("deadline", mode="before")
     @classmethod
     def missing_deadline(cls, value: object) -> object:
