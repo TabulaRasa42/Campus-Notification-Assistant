@@ -4,6 +4,12 @@
 `2f986c23fa700ac89689322418a3d1593d29a0f8` 和 #3/#5/#7 集成基线 `c115916`。
 原分支 `codex/issue-12-extraction-quality` 及原专项工作树保留。
 
+交付提交：基线评分 `ee83b99`，固定工程候选
+`e51d053c770c4f5c1837de3e0ae05975b89a3880`。分支已推送至origin；当前工作树为
+`E:/Program/Codex/.codex/worktrees/dd56/Campus-Notification-Assistant`。
+候选提示词SHA-256：`20d1285b8acb05fb15e590907dd3cbfdfe9e1fd790bebb2d3e9c372e746834e7`。
+已运行评测脚本默认检查模式，确认应用／测试与该候选一致、冻结文件统一LF哈希匹配；未访问网络或凭据。
+
 ## 当前结论
 
 工程改进及本地回归已完成；**真实候选评测和独立人工验收尚未完成，Issue #12尚不能标为通过**。
@@ -75,6 +81,12 @@ TDD新增4条行为测试（每条先观察失败，再最小实现）：
 脚本 `evaluation/capture_issue12_candidate.py` 默认只校验清单，须传完整固定候选SHA；
 检查应用和测试相对该提交没有修改，按统一LF核对冻结样例和协议，拒绝覆盖既有结果。
 只有显式 `--run` 才读取Windows凭据并发请求。应在用户额外授权后执行。
+
+授权后在本工作树执行：
+
+```powershell
+.venv/Scripts/python.exe -X utf8 docs/evaluation/capture_issue12_candidate.py --candidate e51d053c770c4f5c1837de3e0ae05975b89a3880 --run
+```
 
 只发送8条冻结通知source及本候选生产提示词，不发送expected、评分文件或已有待办。
 `deepseek-flash`、关闭思考、非流式JSON，每条3轮，共24轮；仅现有临时故障最多一次自动重试，
