@@ -1,0 +1,2171 @@
+{
+  "kind": "offline_recorded_response_replay_not_semantic_acceptance",
+  "application_commit": "d00330bfe8da75201a181eb3e36e7f9a59ddf090",
+  "new_api_calls": 0,
+  "capture_sha256": {
+    "issue-12-baseline-raw.json": "f289fac594d7b28a04e42222c70211ee15f7e0f00772b2e109b7e553b445292e",
+    "issue-12-candidate-raw.json": "46087639353d6b4d13f7ab7222d57a9097bcae0d7c02eb64c87274319dc346b9",
+    "issue-12-candidate-v2-raw.json": "8620ca73cfcc3be48b4eddc19542f6145904b1776daa96960f8411ee781f343c",
+    "issue-12-precheck-v3-raw.json": "a287a37ca4dd80ae2fd94d24bfcf50336b4e44198d81cb326a6d41e4d2810a8a",
+    "issue-12-precheck-v4-raw.json": "cc149b3562c061708406745459284df68f421b26db062380dc2d4ad0a37f2eb3"
+  },
+  "runs": [
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M01",
+      "trial": 1,
+      "outcome": "service_error",
+      "message": "AI 返回 JSON 或结构不合法，请主动重试；输入已保留。"
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M01",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M01",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M02",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名表电子版",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "一寸证件照",
+          "evidence": "一张一寸证件照",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名表电子版",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "一寸证件照",
+          "evidence": "一张一寸证件照",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M02",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名表电子版",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "一寸证件照",
+          "evidence": "一张一寸证件照",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名表电子版",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "一寸证件照",
+          "evidence": "一张一寸证件照",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M02",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名表电子版",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "一寸证件照",
+          "evidence": "一张一寸证件照",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名表电子版",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "一寸证件照",
+          "evidence": "一张一寸证件照",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M03",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "报名表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "报名表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M03",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "报名时提交报名表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "报名时提交报名表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M03",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "报名时提交报名表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "报名时提交报名表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M04",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证",
+          "evidence": "学生证",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "校园卡",
+          "evidence": "校园卡",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证",
+          "evidence": "学生证",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "校园卡",
+          "evidence": "校园卡",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M04",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "学生证或校园卡任一原件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "学生证或校园卡任一原件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M04",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡原件（任一）",
+          "evidence": "学生证或校园卡任一原件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请表",
+          "requirement": "",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡原件（任一）",
+          "evidence": "学生证或校园卡任一原件",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M05",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M05",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M05",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M06",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M06",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "设备借用申请表",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "设备借用申请表",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-baseline-raw.json",
+      "case": "M06",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "设备借用申请表",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "设备借用申请表",
+          "requirement": "",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M01",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M01",
+      "trial": 2,
+      "outcome": "service_error",
+      "message": "本次仅支持一条办理事项，请分条提取。"
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M01",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M02",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M02",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一寸证件照",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一寸证件照",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M02",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表电子版",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M03",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生报名时须提交学生证复印件；往年已报名者不需再次提交学生证复印件",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生报名时须提交学生证复印件；往年已报名者不需再次提交学生证复印件",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M03",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生须提交学生证复印件，往年已报名者不需再次提交",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生须提交学生证复印件，往年已报名者不需再次提交",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M03",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "报名时提交报名表。",
+          "requirement": "报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生须提交学生证复印件，往年已报名者不需再次提交",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "报名时提交报名表。",
+          "requirement": "报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生须提交学生证复印件，往年已报名者不需再次提交",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M04",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M04",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "携带学生证或校园卡任一原件供核验",
+          "requirement": "申请时携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "携带学生证或校园卡任一原件供核验",
+          "requirement": "申请时携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M04",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "并携带学生证或校园卡任一原件供核验",
+          "requirement": "申请时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "并携带学生证或校园卡任一原件供核验",
+          "requirement": "申请时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M05",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M05",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M05",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M06",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M06",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M06",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M07",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者提交报名表。",
+          "requirement": "所有报名者提交报名表",
+          "relation": null
+        },
+        {
+          "value": "监护人签字的同意书",
+          "evidence": "未满十八周岁的报名者另有要求：上述人员须在报名时上传监护人签字的同意书。",
+          "requirement": "未满十八周岁的报名者须在报名时上传监护人签字的同意书",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者提交报名表。",
+          "requirement": "所有报名者提交报名表",
+          "relation": null
+        },
+        {
+          "value": "监护人签字的同意书",
+          "evidence": "未满十八周岁的报名者另有要求：上述人员须在报名时上传监护人签字的同意书。",
+          "requirement": "未满十八周岁的报名者须在报名时上传监护人签字的同意书",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M07",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者提交报名表。",
+          "requirement": "所有报名者提交报名表",
+          "relation": null
+        },
+        {
+          "value": "监护人签字的同意书",
+          "evidence": "未满十八周岁的报名者另有要求：上述人员须在报名时上传监护人签字的同意书。",
+          "requirement": "未满十八周岁的报名者须在报名时上传监护人签字的同意书",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者提交报名表。",
+          "requirement": "所有报名者提交报名表",
+          "relation": null
+        },
+        {
+          "value": "监护人签字的同意书",
+          "evidence": "未满十八周岁的报名者另有要求：上述人员须在报名时上传监护人签字的同意书。",
+          "requirement": "未满十八周岁的报名者须在报名时上传监护人签字的同意书",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M07",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者提交报名表。",
+          "requirement": "所有报名者提交报名表。",
+          "relation": null
+        },
+        {
+          "value": "监护人签字的同意书",
+          "evidence": "未满十八周岁的报名者另有要求：上述人员须在报名时上传监护人签字的同意书。",
+          "requirement": "未满十八周岁的报名者须在报名时上传监护人签字的同意书。",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者提交报名表。",
+          "requirement": "所有报名者提交报名表。",
+          "relation": null
+        },
+        {
+          "value": "监护人签字的同意书",
+          "evidence": "未满十八周岁的报名者另有要求：上述人员须在报名时上传监护人签字的同意书。",
+          "requirement": "未满十八周岁的报名者须在报名时上传监护人签字的同意书。",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M08",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "学生证/校园卡",
+          "evidence": "申请时请自行携带学生证/校园卡到窗口核验。",
+          "requirement": "申请时自行携带学生证/校园卡到窗口核验（二者关系原文未明确，待核对）",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "学生证/校园卡",
+          "evidence": "申请时请自行携带学生证/校园卡到窗口核验。",
+          "requirement": "申请时自行携带学生证/校园卡到窗口核验（二者关系原文未明确，待核对）",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M08",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "学生证/校园卡",
+          "evidence": "申请时请自行携带学生证/校园卡到窗口核验。",
+          "requirement": "申请时请自行携带学生证/校园卡到窗口核验，两者关系待核对",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "学生证/校园卡",
+          "evidence": "申请时请自行携带学生证/校园卡到窗口核验。",
+          "requirement": "申请时请自行携带学生证/校园卡到窗口核验，两者关系待核对",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-raw.json",
+      "case": "M08",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "学生证/校园卡",
+          "evidence": "申请时请自行携带学生证/校园卡到窗口核验。",
+          "requirement": "申请时请自行携带学生证/校园卡到窗口核验；原文以斜杠连接，二者关系待核对",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "学生证/校园卡",
+          "evidence": "申请时请自行携带学生证/校园卡到窗口核验。",
+          "requirement": "申请时请自行携带学生证/校园卡到窗口核验；原文以斜杠连接，二者关系待核对",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M01",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M01",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M01",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M02",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表电子版",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表电子版",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M02",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表电子版",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表电子版",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M02",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表电子版",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表电子版",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传报名表电子版",
+          "relation": null
+        },
+        {
+          "value": "一张一寸证件照",
+          "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+          "requirement": "所有报名者报名时上传一张一寸证件照",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M03",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生报名时须提交学生证复印件，往年已报名者不需再次提交学生证复印件",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生报名时须提交学生证复印件，往年已报名者不需再次提交学生证复印件",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M03",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者在报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生在报名时须提交学生证复印件，往年已报名者不需再次提交学生证复印件",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者在报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生在报名时须提交学生证复印件，往年已报名者不需再次提交学生证复印件",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M03",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生报名时须提交学生证复印件，往年已报名者不需再次提交",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表。",
+          "requirement": "所有报名者报名时提交报名表",
+          "relation": null
+        },
+        {
+          "value": "学生证复印件",
+          "evidence": "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+          "requirement": "首次报名的学生报名时须提交学生证复印件，往年已报名者不需再次提交",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M04",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "携带学生证或校园卡任一原件供核验",
+          "requirement": "申请时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "携带学生证或校园卡任一原件供核验",
+          "requirement": "申请时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M04",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "并携带学生证或校园卡任一原件供核验",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "并携带学生证或校园卡任一原件供核验",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M04",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡",
+          "evidence": "并携带学生证或校园卡任一原件供核验",
+          "requirement": "申请时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表",
+          "requirement": "申请时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡",
+          "evidence": "并携带学生证或校园卡任一原件供核验",
+          "requirement": "申请时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M05",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M05",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M05",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M06",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M06",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "申请借用设备时，需提前下载并打印一份设备借用申请表，自行携带，现场签署后提交。",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "申请借用设备时，需提前下载并打印一份设备借用申请表，自行携带，现场签署后提交。",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M06",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "设备借用申请表",
+          "evidence": "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "requirement": "提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M09",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者报名时须上传一份PDF格式报名表。",
+          "requirement": "所有报名者报名时须上传一份PDF格式的报名表。",
+          "relation": null
+        },
+        {
+          "value": "接收函",
+          "evidence": "校外实习的学生另有要求。这类学生在报名时还须上传单位盖章的接收函，校内实习者免交接收函。",
+          "requirement": "校外实习的学生报名时还须上传单位盖章的接收函；校内实习者免交接收函。",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者报名时须上传一份PDF格式报名表。",
+          "requirement": "所有报名者报名时须上传一份PDF格式的报名表。",
+          "relation": null
+        },
+        {
+          "value": "接收函",
+          "evidence": "校外实习的学生另有要求。这类学生在报名时还须上传单位盖章的接收函，校内实习者免交接收函。",
+          "requirement": "校外实习的学生报名时还须上传单位盖章的接收函；校内实习者免交接收函。",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M09",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者报名时须上传一份PDF格式报名表。",
+          "requirement": "所有报名者报名时须上传一份PDF格式报名表",
+          "relation": null
+        },
+        {
+          "value": "单位盖章的接收函",
+          "evidence": "校外实习的学生另有要求。这类学生在报名时还须上传单位盖章的接收函，校内实习者免交接收函。",
+          "requirement": "校外实习的学生报名时还须上传单位盖章的接收函，校内实习者免交接收函",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者报名时须上传一份PDF格式报名表。",
+          "requirement": "所有报名者报名时须上传一份PDF格式报名表",
+          "relation": null
+        },
+        {
+          "value": "单位盖章的接收函",
+          "evidence": "校外实习的学生另有要求。这类学生在报名时还须上传单位盖章的接收函，校内实习者免交接收函。",
+          "requirement": "校外实习的学生报名时还须上传单位盖章的接收函，校内实习者免交接收函",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M09",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者报名时须上传一份PDF格式报名表。",
+          "requirement": "所有报名者报名时须上传一份PDF格式报名表。",
+          "relation": null
+        },
+        {
+          "value": "接收函",
+          "evidence": "校外实习的学生另有要求。这类学生在报名时还须上传单位盖章的接收函，校内实习者免交接收函。",
+          "requirement": "校外实习的学生报名时还须上传单位盖章的接收函，校内实习者免交接收函。",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "报名表",
+          "evidence": "所有报名者报名时须上传一份PDF格式报名表。",
+          "requirement": "所有报名者报名时须上传一份PDF格式报名表。",
+          "relation": null
+        },
+        {
+          "value": "接收函",
+          "evidence": "校外实习的学生另有要求。这类学生在报名时还须上传单位盖章的接收函，校内实习者免交接收函。",
+          "requirement": "校外实习的学生报名时还须上传单位盖章的接收函，校内实习者免交接收函。",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M10",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验",
+          "requirement": "申请时请自行携带身份证/护照原件到窗口核验",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "并提交一份已签字的申请表",
+          "requirement": "申请时提交一份已签字的申请表",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验",
+          "requirement": "申请时请自行携带身份证/护照原件到窗口核验",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "并提交一份已签字的申请表",
+          "requirement": "申请时提交一份已签字的申请表",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M10",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验",
+          "requirement": "申请时请自行携带身份证/护照原件到窗口核验",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "并提交一份已签字的申请表",
+          "requirement": "申请时提交一份已签字的申请表",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验",
+          "requirement": "申请时请自行携带身份证/护照原件到窗口核验",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "并提交一份已签字的申请表",
+          "requirement": "申请时提交一份已签字的申请表",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-candidate-v2-raw.json",
+      "case": "M10",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验",
+          "requirement": "申请储物柜时，请自行携带身份证/护照原件到窗口核验",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "并提交一份已签字的申请表",
+          "requirement": "申请储物柜时提交一份已签字的申请表",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验",
+          "requirement": "申请储物柜时，请自行携带身份证/护照原件到窗口核验",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "并提交一份已签字的申请表",
+          "requirement": "申请储物柜时提交一份已签字的申请表",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v3-raw.json",
+      "case": "M01",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [],
+      "after": [],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v3-raw.json",
+      "case": "M04",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请实验室门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请实验室门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请实验室门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请实验室门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v3-raw.json",
+      "case": "M04",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v3-raw.json",
+      "case": "M04",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须提交申请表",
+          "relation": null
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v3-raw.json",
+      "case": "M10",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时请自行携带身份证/护照原件到窗口核验；身份证与护照的关系待核对",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时提交一份已签字的申请表",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时请自行携带身份证/护照原件到窗口核验；身份证与护照的关系待核对",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时提交一份已签字的申请表",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v3-raw.json",
+      "case": "M10",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，需自行携带身份证/护照原件到窗口核验；原文使用斜杠连接身份证与护照，材料关系待核对。",
+          "relation": null
+        },
+        {
+          "value": "一份已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，需提交一份已签字的申请表。",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，需自行携带身份证/护照原件到窗口核验；原文使用斜杠连接身份证与护照，材料关系待核对。",
+          "relation": null
+        },
+        {
+          "value": "一份已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，需提交一份已签字的申请表。",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v3-raw.json",
+      "case": "M10",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，需自行携带身份证/护照原件到窗口核验。",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，需提交一份已签字的申请表。",
+          "relation": null
+        }
+      ],
+      "after": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，需自行携带身份证/护照原件到窗口核验。",
+          "relation": null
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，需提交一份已签字的申请表。",
+          "relation": null
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v4-raw.json",
+      "case": "M01",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "学生证/校园卡",
+          "evidence": "凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。",
+          "requirement": "具有中山大学学籍的全日制在读本科生、研究生（含国际学生）报名参赛，请带学生证/校园卡备查；材料关系待核对",
+          "relation": "uncertain"
+        }
+      ],
+      "after": [],
+      "changed": true
+    },
+    {
+      "capture": "issue-12-precheck-v4-raw.json",
+      "case": "M04",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请实验室门禁时须提交申请表",
+          "relation": "single"
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请实验室门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": "any"
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请实验室门禁时须提交申请表",
+          "relation": "single"
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请实验室门禁时须携带学生证或校园卡任一原件供核验",
+          "relation": "any"
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v4-raw.json",
+      "case": "M04",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须提交申请表。",
+          "relation": "single"
+        },
+        {
+          "value": "学生证或校园卡",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验。",
+          "relation": "any"
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须提交申请表。",
+          "relation": "single"
+        },
+        {
+          "value": "学生证或校园卡",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验。",
+          "relation": "any"
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v4-raw.json",
+      "case": "M04",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须提交申请表。",
+          "relation": "single"
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验。",
+          "relation": "any"
+        }
+      ],
+      "after": [
+        {
+          "value": "申请表",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须提交申请表。",
+          "relation": "single"
+        },
+        {
+          "value": "学生证或校园卡任一原件",
+          "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+          "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验。",
+          "relation": "any"
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v4-raw.json",
+      "case": "M10",
+      "trial": 1,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，申请人请自行携带身份证/护照原件到窗口核验；身份证与护照是何种关系、是否任选其一，材料关系待核对。",
+          "relation": "uncertain"
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，申请人需提交一份已签字的申请表。",
+          "relation": "single"
+        }
+      ],
+      "after": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，申请人请自行携带身份证/护照原件到窗口核验；身份证与护照是何种关系、是否任选其一，材料关系待核对。",
+          "relation": "uncertain"
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，申请人需提交一份已签字的申请表。",
+          "relation": "single"
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v4-raw.json",
+      "case": "M10",
+      "trial": 2,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时请自行携带身份证/护照原件到窗口核验，材料关系待核对。",
+          "relation": "uncertain"
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时提交一份已签字的申请表。",
+          "relation": "single"
+        }
+      ],
+      "after": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时请自行携带身份证/护照原件到窗口核验，材料关系待核对。",
+          "relation": "uncertain"
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时提交一份已签字的申请表。",
+          "relation": "single"
+        }
+      ],
+      "changed": false
+    },
+    {
+      "capture": "issue-12-precheck-v4-raw.json",
+      "case": "M10",
+      "trial": 3,
+      "outcome": "draft",
+      "before": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，请自行携带身份证/护照原件到窗口核验；材料关系待核对。",
+          "relation": "uncertain"
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，提交一份已签字的申请表。",
+          "relation": "single"
+        }
+      ],
+      "after": [
+        {
+          "value": "身份证/护照原件",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，请自行携带身份证/护照原件到窗口核验；材料关系待核对。",
+          "relation": "uncertain"
+        },
+        {
+          "value": "已签字的申请表",
+          "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+          "requirement": "申请储物柜时，提交一份已签字的申请表。",
+          "relation": "single"
+        }
+      ],
+      "changed": false
+    }
+  ],
+  "summary": {
+    "recorded_trials": 80,
+    "drafts": 78,
+    "service_errors": 2,
+    "material_changes": 1
+  }
+}
