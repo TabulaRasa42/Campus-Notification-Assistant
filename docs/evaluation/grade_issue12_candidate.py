@@ -19,8 +19,8 @@ def main():
     for run in raw["runs"]:
         errors = []
 
-        def add(category, location, note):
-            errors.append({"category": category, "location": location, "note": note})
+        def add(category, location, note, findings=errors):
+            findings.append({"category": category, "location": location, "note": note})
 
         if run["outcome"] != "success":
             add(

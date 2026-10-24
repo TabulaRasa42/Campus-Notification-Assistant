@@ -72,7 +72,7 @@ def normalize_item(item: Item, source: str) -> Item:
         )
     else:
         deadline = citation(deadline)
-        raw = deadline.raw if deadline.origin == "user" else deadline.evidence
+        raw = deadline.raw if deadline.origin == "user" else deadline.evidence or deadline.raw
         # Only an explicit full date associated with a deadline may be normalized.
         candidates: set[date] = set()
         for match in FULL_DATE.finditer(source):

@@ -1,8 +1,9 @@
 """Issue #12 behavior at the agreed public service and QML boundaries."""
 
+import pytest
 from test_evidence_time import service_for
 
-from campus_notification_assistant.service import NotificationService
+from campus_notification_assistant.service import NotificationService, ServiceError
 
 
 def test_material_process_and_evidence_survive_confirmation_and_restart(tmp_path):
@@ -184,3 +185,42 @@ def test_legacy_material_is_not_reinterpreted_as_unconditional(qapp, tmp_path):
         root.close()
         engine.deleteLater()
         qapp.processEvents()
+
+
+@pytest.mark.parametrize(
+    "source,raw,model_date",
+    [
+        ("请于10月18日晚24:00前报名。", "10月18日晚24:00", None),
+        ("请于2026年11月15日前报名。", "2026年11月15日前", "2026-11-15"),
+    ],
+)
+def test_missing_deadline_citation_keeps_original_words_but_blocks_save(
+    tmp_path, source, raw, model_date
+):
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "报名", "evidence": "报名"},
+            "deadline": {"raw": raw, "date": model_date},
+            "materials": [],
+        },
+    )
+    draft = service.extract(api_key="test")
+    assert draft.item.deadline.raw == raw
+    assert draft.item.deadline.date is None
+    assert draft.item.deadline.status == "uncertain"
+    assert draft.item.deadline.review == "invalid"
+    assert draft.item.deadline.evidence == ""
+    with pytest.raises(ServiceError, match="依据"):
+        service.confirm(draft.id)
+    assert NotificationService(service.database).list_todos() == []
+    service.correct_field(
+        draft.id,
+        "deadline",
+        raw,
+        evidence_start=source.index(raw),
+        evidence_end=source.index(raw) + len(raw),
+    )
+    saved = service.confirm(draft.id)
+    assert NotificationService(service.database).get_todo(saved.id).item.deadline.raw == raw

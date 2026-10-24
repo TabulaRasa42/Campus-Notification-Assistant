@@ -79,6 +79,9 @@ def main():
     parser.add_argument("--candidate", required=True, help="Exact frozen commit SHA")
     parser.add_argument("--run", action="store_true", help="Make the explicitly authorized calls")
     parser.add_argument("--output", default="issue-12-candidate-raw.json")
+    parser.add_argument(
+        "--suite", help="Explicitly approved alternate frozen suite manifest filename"
+    )
     args = parser.parse_args()
     folder = Path(__file__).resolve().parent
     root = folder.parent.parent
@@ -92,8 +95,24 @@ def main():
         cwd=root,
         check=True,
     )
+    corpus_name = "issue-12-cases.json"
+    frozen_files = FROZEN
+    suite_identity = "materials-v1"
+    if args.suite:
+        suite_path = folder / args.suite
+        if suite_path.parent.resolve() != folder:
+            raise SystemExit("Suite manifest must be within the evaluation folder.")
+        suite_bytes = suite_path.read_bytes()
+        suite = json.loads(suite_bytes)
+        corpus_name = suite["corpus"]
+        frozen_files = suite["lf_sha256"]
+        if set(frozen_files) != {corpus_name, suite["protocol"]}:
+            raise SystemExit("Suite must freeze exactly its corpus and protocol.")
+        suite_identity = {"filename": args.suite, "sha256": digest(suite_bytes)}
     hashes = {}
-    for name, frozen in FROZEN.items():
+    for name, frozen in frozen_files.items():
+        if (folder / name).parent.resolve() != folder:
+            raise SystemExit("Frozen inputs must be within the evaluation folder.")
         content = (folder / name).read_bytes()
         hashes[name] = {
             "bytes_sha256": digest(content),
@@ -101,7 +120,7 @@ def main():
         }
         if hashes[name]["lf_sha256"] != frozen:
             raise SystemExit(f"Frozen facts/protocol changed: {name}")
-    corpus = json.loads((folder / "issue-12-cases.json").read_text(encoding="utf-8"))
+    corpus = json.loads((folder / corpus_name).read_text(encoding="utf-8"))
     runs = [
         {"case": case["id"], "trial": trial, "outcome": "pending", "attempts": []}
         for case in corpus["cases"]
@@ -111,6 +130,7 @@ def main():
         raise SystemExit("Expected eight cases, three trials each, including two holdouts.")
     report = {
         "candidate_commit": commit,
+        "suite": suite_identity,
         "captured_at": now(),
         "frozen_files": hashes,
         "prompt": PROMPT,
