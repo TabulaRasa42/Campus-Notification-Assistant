@@ -1,0 +1,1877 @@
+{
+  "baseline_commit": "c115916225f3144d879726a7e8655acc41c454d2",
+  "raw_sha256": "f289fac594d7b28a04e42222c70211ee15f7e0f00772b2e109b7e553b445292e",
+  "capture_hashes": {
+    "corpus_sha256": "d50ca6064962292be6b28ff0eb34527789f467854f7eb718bdc35bf19e6d0787",
+    "protocol_sha256": "c7894c17271775aeacbbaf75289a1b8d36fb5bce52057143ba385bca67e9e928",
+    "prompt_sha256": "0a1d164e199bbcf580bf2f2dd205c97dab865c6e6ae9b63b78baa6bb2725fe19"
+  },
+  "review_status": "agent_review_complete; independent_human_acceptance_pending",
+  "total": 18,
+  "passed_agent_review": 4,
+  "error_counts_by_trial": {
+    "execution_failure": 1,
+    "unsupported_inference": 1,
+    "insufficient_evidence": 13,
+    "qualifier_distortion": 12
+  },
+  "http_requests": 18,
+  "usage": {
+    "prompt_tokens": 7827,
+    "completion_tokens": 1583,
+    "total_tokens": 9410
+  },
+  "runs": [
+    {
+      "case": "M01",
+      "trial": 1,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "not_scored",
+      "checks": {
+        "action": "无草稿",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "未评分",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "execution_failure",
+          "location": "items[0].evidence",
+          "note": "额外事项层字段被结构校验拒绝；没有应用草稿，材料语义不评分。"
+        }
+      ],
+      "actual": null,
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"报名参加中山大学2026年运动会\",\"evidence\":\"请大家积极报名！\"},\"deadline\":{\"date\":null,\"raw\":\"10月18日晚24:00\",\"evidence\":\"报名ddl为10月18日晚24:00\",\"status\":\"uncertain\",\"precision\":\"unknown\"},\"materials\":[],\"evidence\":\"报名ddl为10月18日晚24:00\"}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    },
+    {
+      "case": "M01",
+      "trial": 2,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "unsupported_inference",
+          "location": "raw.items[0].deadline.date",
+          "note": "模型补为2026-10-18；服务归回待确认，无日期补全年份被展示或保存。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.deadline",
+          "note": "模型提供-1/-1位置，应用标invalid；须修正后才能保存。"
+        }
+      ],
+      "actual": {
+        "id": "87d5f750-3dbf-4959-920b-56fb31968e97",
+        "source": "【2026校运会报名通知】 “中山大学2026年运动会”将于2026年11月7日（周六）在广州校区南校园英东田径场举行，比赛信息如下：  （一）比赛时间、地点 1．时间：2026年11月7日（周六）全天 2．地点：广州校区南校园英东田径场  （二）比赛项目及分组 学生组：田径比赛  男子组：100米、200米、400米、1500米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  女子组：100米、200米、400米、800米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  补充：跳远是助跑跳不是立定跳。  （三）参赛资格 1. 凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。 2. 参赛学生必须经体检合格。其中男子1500米、女子800米参赛者须进行心电图检查，并在赛前检录时签署《身体健康保证书》，承诺身体状况良好，适宜参赛。 3. 中山大学招收的高水平运动员和运动训练专业学生不得报名参赛。  （四）报名要求 1. 径赛每项限报2人（男女分开算）、田赛每项限报1人（男女分开算），如有参赛项目报名超过规定人数，文体部将组织院内筛选。 2. 每人限报2项（另可兼报接力），接力男、女各限报1队。  （五）备注 1. 珠海校区运动员前往南校园的交通安排，以学院后续通知为准。 2. 代表学院参加校运会，综测文体活动加分情况以学院相关规定为准，请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+        "item": {
+          "action": {
+            "value": "报名参加中山大学2026年运动会",
+            "evidence": "请大家积极报名！",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 614,
+            "evidence_end": 622
+          },
+          "deadline": {
+            "date": null,
+            "evidence": "报名ddl为10月18日晚24:00",
+            "raw": "报名ddl为10月18日晚24:00",
+            "status": "uncertain",
+            "precision": "unknown",
+            "origin": "extracted",
+            "review": "invalid",
+            "evidence_start": null,
+            "evidence_end": null
+          },
+          "materials": []
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"报名参加中山大学2026年运动会\",\"evidence\":\"请大家积极报名！\"},\"deadline\":{\"date\":\"2026-10-18\",\"raw\":\"报名ddl为10月18日晚24:00\",\"evidence\":\"报名ddl为10月18日晚24:00\",\"evidence_start\":-1,\"evidence_end\":-1},\"materials\":[]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    },
+    {
+      "case": "M01",
+      "trial": 3,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [],
+      "actual": {
+        "id": "9b02c945-a35e-4657-a351-18dc821b2d40",
+        "source": "【2026校运会报名通知】 “中山大学2026年运动会”将于2026年11月7日（周六）在广州校区南校园英东田径场举行，比赛信息如下：  （一）比赛时间、地点 1．时间：2026年11月7日（周六）全天 2．地点：广州校区南校园英东田径场  （二）比赛项目及分组 学生组：田径比赛  男子组：100米、200米、400米、1500米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  女子组：100米、200米、400米、800米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  补充：跳远是助跑跳不是立定跳。  （三）参赛资格 1. 凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。 2. 参赛学生必须经体检合格。其中男子1500米、女子800米参赛者须进行心电图检查，并在赛前检录时签署《身体健康保证书》，承诺身体状况良好，适宜参赛。 3. 中山大学招收的高水平运动员和运动训练专业学生不得报名参赛。  （四）报名要求 1. 径赛每项限报2人（男女分开算）、田赛每项限报1人（男女分开算），如有参赛项目报名超过规定人数，文体部将组织院内筛选。 2. 每人限报2项（另可兼报接力），接力男、女各限报1队。  （五）备注 1. 珠海校区运动员前往南校园的交通安排，以学院后续通知为准。 2. 代表学院参加校运会，综测文体活动加分情况以学院相关规定为准，请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+        "item": {
+          "action": {
+            "value": "报名参加中山大学2026年运动会",
+            "evidence": "请大家积极报名！",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 614,
+            "evidence_end": 622
+          },
+          "deadline": {
+            "date": null,
+            "evidence": "报名ddl为10月18日晚24:00",
+            "raw": "报名ddl为10月18日晚24:00",
+            "status": "uncertain",
+            "precision": "unknown",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 642
+          },
+          "materials": []
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"报名参加中山大学2026年运动会\",\"evidence\":\"请大家积极报名！\"},\"deadline\":{\"date\":null,\"raw\":\"10月18日晚24:00\",\"status\":\"uncertain\",\"precision\":\"unknown\",\"evidence\":\"报名ddl为10月18日晚24:00\"},\"materials\":[]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    },
+    {
+      "case": "M02",
+      "trial": 1,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0:2].value",
+          "note": "名称齐全；两项均缺所有报名者、报名时上传，证件照缺一张；限定不能只藏在引用中。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials[0:2].evidence",
+          "note": "仅引用材料名称或数量，未覆盖报名上传责任、阶段和适用对象。"
+        }
+      ],
+      "actual": {
+        "id": "bdde8ffb-1e8d-4963-90c9-418857c75292",
+        "source": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+        "item": {
+          "action": {
+            "value": "完成志愿者报名",
+            "evidence": "完成报名",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 26,
+            "evidence_end": 30
+          },
+          "deadline": {
+            "date": "2026-11-15",
+            "evidence": "2026年11月15日前",
+            "raw": "2026年11月15日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 14,
+            "evidence_end": 26
+          },
+          "materials": [
+            {
+              "value": "报名表电子版",
+              "evidence": "报名表电子版",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 36,
+              "evidence_end": 42
+            },
+            {
+              "value": "一寸证件照",
+              "evidence": "一张一寸证件照",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 43,
+              "evidence_end": 50
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"完成志愿者报名\",\"evidence\":\"完成报名\"},\"deadline\":{\"date\":\"2026-11-15\",\"raw\":\"2026年11月15日前\",\"evidence\":\"2026年11月15日前\"},\"materials\":[{\"value\":\"报名表电子版\",\"evidence\":\"报名表电子版\"},{\"value\":\"一寸证件照\",\"evidence\":\"一张一寸证件照\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "志愿者报名",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-15"
+        },
+        "materials": [
+          {
+            "names": [
+              "报名表"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "电子版"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          },
+          {
+            "names": [
+              "证件照"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "一张",
+              "一寸"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          }
+        ],
+        "facts": [
+          "报名表和证件照两项均必需，不能变为二选一"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M02",
+      "trial": 2,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0:2].value",
+          "note": "名称齐全；两项均缺所有报名者、报名时上传，证件照缺一张；限定不能只藏在引用中。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials[0:2].evidence",
+          "note": "仅引用材料名称或数量，未覆盖报名上传责任、阶段和适用对象。"
+        }
+      ],
+      "actual": {
+        "id": "10d57213-555c-4657-bc81-2a91b983b028",
+        "source": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+        "item": {
+          "action": {
+            "value": "完成志愿者报名",
+            "evidence": "请所有报名者于2026年11月15日前完成报名",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 30
+          },
+          "deadline": {
+            "date": "2026-11-15",
+            "evidence": "2026年11月15日前",
+            "raw": "2026年11月15日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 14,
+            "evidence_end": 26
+          },
+          "materials": [
+            {
+              "value": "报名表电子版",
+              "evidence": "报名表电子版",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 36,
+              "evidence_end": 42
+            },
+            {
+              "value": "一寸证件照",
+              "evidence": "一张一寸证件照",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 43,
+              "evidence_end": 50
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"完成志愿者报名\",\"evidence\":\"请所有报名者于2026年11月15日前完成报名\"},\"deadline\":{\"date\":\"2026-11-15\",\"raw\":\"2026年11月15日前\",\"evidence\":\"2026年11月15日前\"},\"materials\":[{\"value\":\"报名表电子版\",\"evidence\":\"报名表电子版\"},{\"value\":\"一寸证件照\",\"evidence\":\"一张一寸证件照\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "志愿者报名",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-15"
+        },
+        "materials": [
+          {
+            "names": [
+              "报名表"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "电子版"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          },
+          {
+            "names": [
+              "证件照"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "一张",
+              "一寸"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          }
+        ],
+        "facts": [
+          "报名表和证件照两项均必需，不能变为二选一"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M02",
+      "trial": 3,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0:2].value",
+          "note": "名称齐全；两项均缺所有报名者、报名时上传，证件照缺一张；限定不能只藏在引用中。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials[0:2].evidence",
+          "note": "仅引用材料名称或数量，未覆盖报名上传责任、阶段和适用对象。"
+        }
+      ],
+      "actual": {
+        "id": "1efa1124-65f3-48d2-9c7e-d20139b7bbe0",
+        "source": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+        "item": {
+          "action": {
+            "value": "完成志愿者报名",
+            "evidence": "请所有报名者于2026年11月15日前完成报名",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 30
+          },
+          "deadline": {
+            "date": "2026-11-15",
+            "evidence": "2026年11月15日前",
+            "raw": "2026年11月15日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 14,
+            "evidence_end": 26
+          },
+          "materials": [
+            {
+              "value": "报名表电子版",
+              "evidence": "报名表电子版",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 36,
+              "evidence_end": 42
+            },
+            {
+              "value": "一寸证件照",
+              "evidence": "一张一寸证件照",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 43,
+              "evidence_end": 50
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"完成志愿者报名\",\"evidence\":\"请所有报名者于2026年11月15日前完成报名\"},\"deadline\":{\"date\":\"2026-11-15\",\"raw\":\"2026年11月15日前\",\"evidence\":\"2026年11月15日前\",\"status\":\"certain\",\"precision\":\"date\"},\"materials\":[{\"value\":\"报名表电子版\",\"evidence\":\"报名表电子版\"},{\"value\":\"一寸证件照\",\"evidence\":\"一张一寸证件照\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "志愿者报名",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-15"
+        },
+        "materials": [
+          {
+            "names": [
+              "报名表"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "电子版"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          },
+          {
+            "names": [
+              "证件照"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "一张",
+              "一寸"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          }
+        ],
+        "facts": [
+          "报名表和证件照两项均必需，不能变为二选一"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M03",
+      "trial": 1,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0:2].value",
+          "note": "名称齐全；学生证复印件未展示仅首次报名及往年已报名者豁免；两项未完整展示报名提交责任。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials[0:2].evidence",
+          "note": "学生证引文未覆盖往年已报名者豁免；报名表引文未覆盖所有报名者的先行条件。"
+        }
+      ],
+      "actual": {
+        "id": "b7254d81-fd2e-46c2-a09b-41fe722d8d99",
+        "source": "【社团报名】请所有报名者于2026年11月16日前报名，报名时提交报名表。首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+        "item": {
+          "action": {
+            "value": "报名并提交报名表",
+            "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 6,
+            "evidence_end": 36
+          },
+          "deadline": {
+            "date": "2026-11-16",
+            "evidence": "2026年11月16日前",
+            "raw": "2026年11月16日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 13,
+            "evidence_end": 25
+          },
+          "materials": [
+            {
+              "value": "报名表",
+              "evidence": "报名表",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 33,
+              "evidence_end": 36
+            },
+            {
+              "value": "学生证复印件",
+              "evidence": "首次报名的学生还须提交学生证复印件",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 37,
+              "evidence_end": 54
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"报名并提交报名表\",\"evidence\":\"请所有报名者于2026年11月16日前报名，报名时提交报名表\"},\"deadline\":{\"date\":\"2026-11-16\",\"raw\":\"2026年11月16日前\",\"evidence\":\"2026年11月16日前\"},\"materials\":[{\"value\":\"报名表\",\"evidence\":\"报名表\"},{\"value\":\"学生证复印件\",\"evidence\":\"首次报名的学生还须提交学生证复印件\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "社团报名",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-16"
+        },
+        "materials": [
+          {
+            "names": [
+              "报名表"
+            ],
+            "responsibility": "提交",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月16日前报名，报名时提交报名表。"
+            ]
+          },
+          {
+            "names": [
+              "学生证复印件"
+            ],
+            "responsibility": "提交",
+            "conditions": "仅首次报名的学生；往年已报名者不需再次提交",
+            "stage": "报名时",
+            "relation": "single",
+            "evidence": [
+              "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。"
+            ]
+          }
+        ],
+        "facts": [
+          "不得把学生证复印件扩展为所有人必需",
+          "不得将复印件改为原件"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M03",
+      "trial": 2,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0:2].value",
+          "note": "名称齐全；学生证复印件未展示仅首次报名及往年已报名者豁免；两项未完整展示报名提交责任。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials[0:2].evidence",
+          "note": "学生证引文未覆盖往年已报名者豁免；报名表引文未覆盖所有报名者的先行条件。"
+        }
+      ],
+      "actual": {
+        "id": "c98fabda-d1b2-4fe4-a4aa-b02fdfff9b01",
+        "source": "【社团报名】请所有报名者于2026年11月16日前报名，报名时提交报名表。首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+        "item": {
+          "action": {
+            "value": "报名",
+            "evidence": "请所有报名者于2026年11月16日前报名",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 6,
+            "evidence_end": 27
+          },
+          "deadline": {
+            "date": "2026-11-16",
+            "evidence": "2026年11月16日前",
+            "raw": "2026年11月16日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 13,
+            "evidence_end": 25
+          },
+          "materials": [
+            {
+              "value": "报名表",
+              "evidence": "报名时提交报名表",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 28,
+              "evidence_end": 36
+            },
+            {
+              "value": "学生证复印件",
+              "evidence": "首次报名的学生还须提交学生证复印件",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 37,
+              "evidence_end": 54
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"报名\",\"evidence\":\"请所有报名者于2026年11月16日前报名\"},\"deadline\":{\"date\":\"2026-11-16\",\"raw\":\"2026年11月16日前\",\"evidence\":\"2026年11月16日前\"},\"materials\":[{\"value\":\"报名表\",\"evidence\":\"报名时提交报名表\"},{\"value\":\"学生证复印件\",\"evidence\":\"首次报名的学生还须提交学生证复印件\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "社团报名",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-16"
+        },
+        "materials": [
+          {
+            "names": [
+              "报名表"
+            ],
+            "responsibility": "提交",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月16日前报名，报名时提交报名表。"
+            ]
+          },
+          {
+            "names": [
+              "学生证复印件"
+            ],
+            "responsibility": "提交",
+            "conditions": "仅首次报名的学生；往年已报名者不需再次提交",
+            "stage": "报名时",
+            "relation": "single",
+            "evidence": [
+              "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。"
+            ]
+          }
+        ],
+        "facts": [
+          "不得把学生证复印件扩展为所有人必需",
+          "不得将复印件改为原件"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M03",
+      "trial": 3,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0:2].value",
+          "note": "名称齐全；学生证复印件未展示仅首次报名及往年已报名者豁免；两项未完整展示报名提交责任。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials[0:2].evidence",
+          "note": "学生证引文未覆盖往年已报名者豁免；报名表引文未覆盖所有报名者的先行条件。"
+        }
+      ],
+      "actual": {
+        "id": "316e26d9-358b-4722-84aa-557c924758dc",
+        "source": "【社团报名】请所有报名者于2026年11月16日前报名，报名时提交报名表。首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。",
+        "item": {
+          "action": {
+            "value": "报名并提交报名材料",
+            "evidence": "请所有报名者于2026年11月16日前报名，报名时提交报名表",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 6,
+            "evidence_end": 36
+          },
+          "deadline": {
+            "date": "2026-11-16",
+            "evidence": "请所有报名者于2026年11月16日前报名",
+            "raw": "请所有报名者于2026年11月16日前报名",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 6,
+            "evidence_end": 27
+          },
+          "materials": [
+            {
+              "value": "报名表",
+              "evidence": "报名时提交报名表",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 28,
+              "evidence_end": 36
+            },
+            {
+              "value": "学生证复印件",
+              "evidence": "首次报名的学生还须提交学生证复印件",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 37,
+              "evidence_end": 54
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"报名并提交报名材料\",\"evidence\":\"请所有报名者于2026年11月16日前报名，报名时提交报名表\"},\"deadline\":{\"date\":\"2026-11-16\",\"raw\":\"2026年11月16日前\",\"evidence\":\"请所有报名者于2026年11月16日前报名\"},\"materials\":[{\"value\":\"报名表\",\"evidence\":\"报名时提交报名表\"},{\"value\":\"学生证复印件\",\"evidence\":\"首次报名的学生还须提交学生证复印件\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "社团报名",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-16"
+        },
+        "materials": [
+          {
+            "names": [
+              "报名表"
+            ],
+            "responsibility": "提交",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月16日前报名，报名时提交报名表。"
+            ]
+          },
+          {
+            "names": [
+              "学生证复印件"
+            ],
+            "responsibility": "提交",
+            "conditions": "仅首次报名的学生；往年已报名者不需再次提交",
+            "stage": "报名时",
+            "relation": "single",
+            "evidence": [
+              "首次报名的学生还须提交学生证复印件，往年已报名者不需再次提交学生证复印件。"
+            ]
+          }
+        ],
+        "facts": [
+          "不得把学生证复印件扩展为所有人必需",
+          "不得将复印件改为原件"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M04",
+      "trial": 1,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials",
+          "note": "学生证、校园卡拆成两项，丢失任选其一及原件；申请表缺提交、证件缺携带核验及申请阶段。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials",
+          "note": "名称片段未支持选项关系、原件、阶段与责任。"
+        }
+      ],
+      "actual": {
+        "id": "7e8db18e-211f-4f44-8460-621e7fb90daa",
+        "source": "【实验室门禁申请】请于2026年11月17日前申请门禁。申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+        "item": {
+          "action": {
+            "value": "申请实验室门禁",
+            "evidence": "申请门禁",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 23,
+            "evidence_end": 27
+          },
+          "deadline": {
+            "date": "2026-11-17",
+            "evidence": "2026年11月17日前",
+            "raw": "2026年11月17日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 11,
+            "evidence_end": 23
+          },
+          "materials": [
+            {
+              "value": "申请表",
+              "evidence": "申请表",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 34,
+              "evidence_end": 37
+            },
+            {
+              "value": "学生证",
+              "evidence": "学生证",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 41,
+              "evidence_end": 44
+            },
+            {
+              "value": "校园卡",
+              "evidence": "校园卡",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 45,
+              "evidence_end": 48
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请实验室门禁\",\"evidence\":\"申请门禁\"},\"deadline\":{\"date\":\"2026-11-17\",\"raw\":\"2026年11月17日前\",\"evidence\":\"2026年11月17日前\"},\"materials\":[{\"value\":\"申请表\",\"evidence\":\"申请表\"},{\"value\":\"学生证\",\"evidence\":\"学生证\"},{\"value\":\"校园卡\",\"evidence\":\"校园卡\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "实验室门禁申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-17"
+        },
+        "materials": [
+          {
+            "names": [
+              "申请表"
+            ],
+            "responsibility": "提交",
+            "conditions": null,
+            "stage": "申请时",
+            "relation": "single",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          },
+          {
+            "names": [
+              "学生证",
+              "校园卡"
+            ],
+            "responsibility": "携带供核验",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "原件"
+            ],
+            "relation": "any",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          }
+        ],
+        "facts": [
+          "申请表必需，加上两证任选其一；不是三者任选其一",
+          "关系可以通过文字呈现，不强制特定UI结构"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M04",
+      "trial": 2,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials",
+          "note": "保留两证任一原件；申请表缺提交、证件缺携带核验，均缺申请时。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials",
+          "note": "引用保留名称及选项关系，但缺提交、携带核验和阶段。"
+        }
+      ],
+      "actual": {
+        "id": "dc203736-ce62-4108-ad27-e08e8508000a",
+        "source": "【实验室门禁申请】请于2026年11月17日前申请门禁。申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+        "item": {
+          "action": {
+            "value": "申请实验室门禁",
+            "evidence": "申请门禁",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 23,
+            "evidence_end": 27
+          },
+          "deadline": {
+            "date": "2026-11-17",
+            "evidence": "2026年11月17日前",
+            "raw": "2026年11月17日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 11,
+            "evidence_end": 23
+          },
+          "materials": [
+            {
+              "value": "申请表",
+              "evidence": "申请表",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 34,
+              "evidence_end": 37
+            },
+            {
+              "value": "学生证或校园卡任一原件",
+              "evidence": "学生证或校园卡任一原件",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 41,
+              "evidence_end": 52
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请实验室门禁\",\"evidence\":\"申请门禁\"},\"deadline\":{\"date\":\"2026-11-17\",\"raw\":\"2026年11月17日前\",\"evidence\":\"2026年11月17日前\"},\"materials\":[{\"value\":\"申请表\",\"evidence\":\"申请表\"},{\"value\":\"学生证或校园卡任一原件\",\"evidence\":\"学生证或校园卡任一原件\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "实验室门禁申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-17"
+        },
+        "materials": [
+          {
+            "names": [
+              "申请表"
+            ],
+            "responsibility": "提交",
+            "conditions": null,
+            "stage": "申请时",
+            "relation": "single",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          },
+          {
+            "names": [
+              "学生证",
+              "校园卡"
+            ],
+            "responsibility": "携带供核验",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "原件"
+            ],
+            "relation": "any",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          }
+        ],
+        "facts": [
+          "申请表必需，加上两证任选其一；不是三者任选其一",
+          "关系可以通过文字呈现，不强制特定UI结构"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M04",
+      "trial": 3,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials",
+          "note": "任选关系与原件含义正确；仍缺提交、携带核验和申请时。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials",
+          "note": "引用缺责任和阶段；另因应用强制value子串，同义改写被标invalid，非模型选项语义错误。"
+        }
+      ],
+      "actual": {
+        "id": "8b0b0fcc-35d7-42e1-9b59-742cf573de90",
+        "source": "【实验室门禁申请】请于2026年11月17日前申请门禁。申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+        "item": {
+          "action": {
+            "value": "申请实验室门禁",
+            "evidence": "请于2026年11月17日前申请门禁",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 9,
+            "evidence_end": 27
+          },
+          "deadline": {
+            "date": "2026-11-17",
+            "evidence": "2026年11月17日前",
+            "raw": "2026年11月17日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 11,
+            "evidence_end": 23
+          },
+          "materials": [
+            {
+              "value": "申请表",
+              "evidence": "申请表",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 34,
+              "evidence_end": 37
+            },
+            {
+              "value": "学生证或校园卡原件（任一）",
+              "evidence": "学生证或校园卡任一原件",
+              "origin": "extracted",
+              "review": "invalid",
+              "evidence_start": 41,
+              "evidence_end": 52
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请实验室门禁\",\"evidence\":\"请于2026年11月17日前申请门禁\"},\"deadline\":{\"date\":\"2026-11-17\",\"raw\":\"2026年11月17日前\",\"evidence\":\"2026年11月17日前\"},\"materials\":[{\"value\":\"申请表\",\"evidence\":\"申请表\"},{\"value\":\"学生证或校园卡原件（任一）\",\"evidence\":\"学生证或校园卡任一原件\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "实验室门禁申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-17"
+        },
+        "materials": [
+          {
+            "names": [
+              "申请表"
+            ],
+            "responsibility": "提交",
+            "conditions": null,
+            "stage": "申请时",
+            "relation": "single",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          },
+          {
+            "names": [
+              "学生证",
+              "校园卡"
+            ],
+            "responsibility": "携带供核验",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "原件"
+            ],
+            "relation": "any",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          }
+        ],
+        "facts": [
+          "申请表必需，加上两证任选其一；不是三者任选其一",
+          "关系可以通过文字呈现，不强制特定UI结构"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M05",
+      "trial": 1,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [],
+      "actual": {
+        "id": "b26cbc43-c7c4-435f-9f31-6cd7af3a07ae",
+        "source": "【领取纪念品】请于2026年11月18日前到办公室领取纪念品。领取时现场签署领取登记表，无须提前下载、打印或携带登记表。",
+        "item": {
+          "action": {
+            "value": "到办公室领取纪念品",
+            "evidence": "请于2026年11月18日前到办公室领取纪念品",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 30
+          },
+          "deadline": {
+            "date": "2026-11-18",
+            "evidence": "2026年11月18日前",
+            "raw": "2026年11月18日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 9,
+            "evidence_end": 21
+          },
+          "materials": []
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"到办公室领取纪念品\",\"evidence\":\"请于2026年11月18日前到办公室领取纪念品\"},\"deadline\":{\"date\":\"2026-11-18\",\"raw\":\"2026年11月18日前\",\"evidence\":\"2026年11月18日前\"},\"materials\":[]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "领取纪念品",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-18"
+        },
+        "materials": [],
+        "must_exclude": [
+          "领取登记表"
+        ],
+        "facts": [
+          "即使同属领取环节，现场签署但无需自行准备仍不算所需材料",
+          "不得猜测登记表由谁提供",
+          "没有材料时保持既有原文未提及显示，不增加新的无需材料状态"
+        ]
+      }
+    },
+    {
+      "case": "M05",
+      "trial": 2,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [],
+      "actual": {
+        "id": "2bdd3fe9-bef5-4fb0-bcae-4970fe6053cd",
+        "source": "【领取纪念品】请于2026年11月18日前到办公室领取纪念品。领取时现场签署领取登记表，无须提前下载、打印或携带登记表。",
+        "item": {
+          "action": {
+            "value": "到办公室领取纪念品",
+            "evidence": "请于2026年11月18日前到办公室领取纪念品",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 30
+          },
+          "deadline": {
+            "date": "2026-11-18",
+            "evidence": "请于2026年11月18日前到办公室领取纪念品",
+            "raw": "请于2026年11月18日前到办公室领取纪念品",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 30
+          },
+          "materials": []
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"到办公室领取纪念品\",\"evidence\":\"请于2026年11月18日前到办公室领取纪念品\"},\"deadline\":{\"date\":\"2026-11-18\",\"raw\":\"2026年11月18日前\",\"evidence\":\"请于2026年11月18日前到办公室领取纪念品\"},\"materials\":[]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "领取纪念品",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-18"
+        },
+        "materials": [],
+        "must_exclude": [
+          "领取登记表"
+        ],
+        "facts": [
+          "即使同属领取环节，现场签署但无需自行准备仍不算所需材料",
+          "不得猜测登记表由谁提供",
+          "没有材料时保持既有原文未提及显示，不增加新的无需材料状态"
+        ]
+      }
+    },
+    {
+      "case": "M05",
+      "trial": 3,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [],
+      "actual": {
+        "id": "326008cf-e4da-4fa0-baf4-3c2df33c9c57",
+        "source": "【领取纪念品】请于2026年11月18日前到办公室领取纪念品。领取时现场签署领取登记表，无须提前下载、打印或携带登记表。",
+        "item": {
+          "action": {
+            "value": "到办公室领取纪念品",
+            "evidence": "请于2026年11月18日前到办公室领取纪念品",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 30
+          },
+          "deadline": {
+            "date": "2026-11-18",
+            "evidence": "请于2026年11月18日前到办公室领取纪念品",
+            "raw": "请于2026年11月18日前到办公室领取纪念品",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 30
+          },
+          "materials": []
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"到办公室领取纪念品\",\"evidence\":\"请于2026年11月18日前到办公室领取纪念品\"},\"deadline\":{\"date\":\"2026-11-18\",\"raw\":\"2026年11月18日前\",\"evidence\":\"请于2026年11月18日前到办公室领取纪念品\"},\"materials\":[]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "领取纪念品",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-18"
+        },
+        "materials": [],
+        "must_exclude": [
+          "领取登记表"
+        ],
+        "facts": [
+          "即使同属领取环节，现场签署但无需自行准备仍不算所需材料",
+          "不得猜测登记表由谁提供",
+          "没有材料时保持既有原文未提及显示，不增加新的无需材料状态"
+        ]
+      }
+    },
+    {
+      "case": "M06",
+      "trial": 1,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0].value",
+          "note": "名称齐全；未展示提前下载打印一份、申请时自行携带、现场签署后提交。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials[0].evidence",
+          "note": "第1轮只引用下载打印部分，第2/3轮仅名称；未覆盖完整处理过程和阶段。"
+        }
+      ],
+      "actual": {
+        "id": "f1670253-38f6-41e9-b7c2-2dddddb0cbcc",
+        "source": "【设备借用申请】请于2026年11月19日前申请借用设备。请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+        "item": {
+          "action": {
+            "value": "申请借用设备",
+            "evidence": "申请借用设备",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 22,
+            "evidence_end": 28
+          },
+          "deadline": {
+            "date": "2026-11-19",
+            "evidence": "请于2026年11月19日前申请借用设备",
+            "raw": "请于2026年11月19日前申请借用设备",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 8,
+            "evidence_end": 28
+          },
+          "materials": [
+            {
+              "value": "设备借用申请表",
+              "evidence": "请提前下载并打印一份设备借用申请表",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 29,
+              "evidence_end": 46
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请借用设备\",\"evidence\":\"申请借用设备\"},\"deadline\":{\"date\":\"2026-11-19\",\"raw\":\"2026年11月19日前\",\"evidence\":\"请于2026年11月19日前申请借用设备\"},\"materials\":[{\"value\":\"设备借用申请表\",\"evidence\":\"请提前下载并打印一份设备借用申请表\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "设备借用申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-19"
+        },
+        "materials": [
+          {
+            "names": [
+              "设备借用申请表"
+            ],
+            "responsibility": "提前下载打印并自行携带，现场签署后提交",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "一份"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。"
+            ]
+          }
+        ],
+        "facts": [
+          "不能因为包含现场签署就排除原文明示需要提前准备的申请表"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M06",
+      "trial": 2,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0].value",
+          "note": "名称齐全；未展示提前下载打印一份、申请时自行携带、现场签署后提交。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials[0].evidence",
+          "note": "第1轮只引用下载打印部分，第2/3轮仅名称；未覆盖完整处理过程和阶段。"
+        }
+      ],
+      "actual": {
+        "id": "2270bb17-bf83-481a-bcdf-2d459d14e097",
+        "source": "【设备借用申请】请于2026年11月19日前申请借用设备。请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+        "item": {
+          "action": {
+            "value": "申请借用设备",
+            "evidence": "申请借用设备",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 22,
+            "evidence_end": 28
+          },
+          "deadline": {
+            "date": "2026-11-19",
+            "evidence": "2026年11月19日前",
+            "raw": "2026年11月19日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 10,
+            "evidence_end": 22
+          },
+          "materials": [
+            {
+              "value": "设备借用申请表",
+              "evidence": "设备借用申请表",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 39,
+              "evidence_end": 46
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请借用设备\",\"evidence\":\"申请借用设备\"},\"deadline\":{\"date\":\"2026-11-19\",\"raw\":\"2026年11月19日前\",\"evidence\":\"2026年11月19日前\"},\"materials\":[{\"value\":\"设备借用申请表\",\"evidence\":\"设备借用申请表\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "设备借用申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-19"
+        },
+        "materials": [
+          {
+            "names": [
+              "设备借用申请表"
+            ],
+            "responsibility": "提前下载打印并自行携带，现场签署后提交",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "一份"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。"
+            ]
+          }
+        ],
+        "facts": [
+          "不能因为包含现场签署就排除原文明示需要提前准备的申请表"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M06",
+      "trial": 3,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "semantic_review": "scored",
+      "checks": {
+        "action": "仅当前事项，同义名称可接受",
+        "deadline": "见errors；除M01第2轮外，已返回草稿均符合时间规则",
+        "materials": "见errors；材料名称无漏项；零材料无召回率分母",
+        "must_exclude": "无误收录",
+        "facts": "逐项对照expected；限定、关系及依据不足详见errors"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0].value",
+          "note": "名称齐全；未展示提前下载打印一份、申请时自行携带、现场签署后提交。"
+        },
+        {
+          "category": "insufficient_evidence",
+          "location": "draft.item.materials[0].evidence",
+          "note": "第1轮只引用下载打印部分，第2/3轮仅名称；未覆盖完整处理过程和阶段。"
+        }
+      ],
+      "actual": {
+        "id": "3c7d1d74-505c-49ca-86fb-dd2a342c184b",
+        "source": "【设备借用申请】请于2026年11月19日前申请借用设备。请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。",
+        "item": {
+          "action": {
+            "value": "申请借用设备",
+            "evidence": "申请借用设备",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 22,
+            "evidence_end": 28
+          },
+          "deadline": {
+            "date": "2026-11-19",
+            "evidence": "2026年11月19日前",
+            "raw": "2026年11月19日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 10,
+            "evidence_end": 22
+          },
+          "materials": [
+            {
+              "value": "设备借用申请表",
+              "evidence": "设备借用申请表",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 39,
+              "evidence_end": 46
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请借用设备\",\"evidence\":\"申请借用设备\"},\"deadline\":{\"date\":\"2026-11-19\",\"raw\":\"2026年11月19日前\",\"evidence\":\"2026年11月19日前\"},\"materials\":[{\"value\":\"设备借用申请表\",\"evidence\":\"设备借用申请表\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "设备借用申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-19"
+        },
+        "materials": [
+          {
+            "names": [
+              "设备借用申请表"
+            ],
+            "responsibility": "提前下载打印并自行携带，现场签署后提交",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "一份"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请提前下载并打印一份设备借用申请表，申请时自行携带，现场签署后提交。"
+            ]
+          }
+        ],
+        "facts": [
+          "不能因为包含现场签署就排除原文明示需要提前准备的申请表"
+        ],
+        "must_exclude": []
+      }
+    }
+  ]
+}
