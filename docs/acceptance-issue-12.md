@@ -17,6 +17,25 @@
 随后已修复截止字段提示不足及缺依据时原话被清空的问题；修复版本尚无真实评测结论。
 独立人工验收仍未完成。
 
+修复候选固定为 `b22d1c0f838083781fbc6f58a5c608218c9331bc`，提示词SHA-256
+`f5a2d5e7864b1c508d243c6b888264acab880cb9f8352599acd8aecdcff4519a`。
+固定后才编写新的两条保留样例提案：
+
+- M09课程实践报名：所有人上传一份PDF表，校外实习者另交盖章接收函、校内者豁免；排除报到身份证。
+- M10储物柜申请：身份证/护照原件到窗口核验，斜杠关系待核对，另交一份已签字申请表；排除无需准备的现场确认单。
+
+见[新8条样例提案](evaluation/issue-12-cases-v2-proposal.json)、
+[v2协议提案](evaluation/issue-12-protocol-v2-proposal.md)及
+[冻结清单](evaluation/issue-12-suite-v2-proposal.json)。
+原M01-M06及expected逐字不变；原M07/M08和v1文件全部保留。v2尚待用户认可及新增调用授权，未执行。
+新候选与新提案已通过脚本无调用检查，代码固定、输入哈希匹配。
+
+若用户明确认可本提案并授权新24轮，执行以下命令；否则不运行：
+
+```powershell
+.venv/Scripts/python.exe -X utf8 docs/evaluation/capture_issue12_candidate.py --candidate b22d1c0f838083781fbc6f58a5c608218c9331bc --suite issue-12-suite-v2-proposal.json --output issue-12-candidate-v2-raw.json --run
+```
+
 首批24轮结果见[失败报告](evaluation/issue-12-candidate-report.md)、
 [逐轮评分](evaluation/issue-12-candidate-grades.json)和[完整原始结果](evaluation/issue-12-candidate-raw.json)。
 实际24次HTTP请求，无重试，输入23424、输出3170、总用量26594 tokens；原18轮授权和本批24轮授权都已用完。
