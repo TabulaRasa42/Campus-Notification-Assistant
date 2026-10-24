@@ -16,6 +16,7 @@ from pydantic import ValidationError
 from .credentials import DEFAULT_NAMESPACE, Credentials
 from .deepseek import DeepSeek
 from .errors import ServiceError, StaleRequestError
+from .material_scope import exclude_other_stage_materials
 from .models import CitedText, Deadline, Draft, Item, Material, MaterialRelation, Todo
 
 Citation = TypeVar("Citation", CitedText, Deadline, Material)
@@ -232,7 +233,7 @@ class NotificationService:
                 ),
             }
         )
-        item = normalize_item(received, source)
+        item = exclude_other_stage_materials(normalize_item(received, source), source)
         with self._state_lock:
             if generation != self._generation:
                 raise StaleRequestError()

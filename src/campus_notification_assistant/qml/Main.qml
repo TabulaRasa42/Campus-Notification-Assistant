@@ -222,7 +222,11 @@ ApplicationWindow {
                                 spacing: 16
                                 Layout.fillWidth: true
                                 Label { text: "所需材料"; font.pixelSize: 12; color: "#525252" }
-                                Label { visible: (backend.resultData.materials || []).length === 0; text: "原文未提及" }
+                                Label {
+                                    objectName: "materialsMissing"
+                                    visible: (backend.resultData.materials || []).length === 0
+                                    text: "原文未提及"
+                                }
                                 Repeater {
                                     model: backend.resultData.materials || []
                                     CitedField {
