@@ -115,6 +115,9 @@ def test_qml_material_requirement_is_visible_editable_and_reloaded(qapp, qtbot, 
         control(root, "correctionRequirement").setProperty(
             "text", "申请时携带两证中的任一原件，供核验"
         )
+        relation_choice = control(root, "correctionRelation")
+        relation_choice.setProperty("currentIndex", 2)
+        assert relation_choice.property("currentText") == "任选其一"
         control(root, "correctionDialog").accept()
         qtbot.waitUntil(
             lambda: (
@@ -127,6 +130,7 @@ def test_qml_material_requirement_is_visible_editable_and_reloaded(qapp, qtbot, 
         qtbot.waitUntil(lambda: len(service.list_todos()) == 1)
         qtbot.waitUntil(lambda: not controller.busy)
         saved_id = service.list_todos()[0].id
+        assert service.get_todo(saved_id).item.materials[0].relation == "any"
     finally:
         controller.wait_for_workers()
         root.setProperty("allowClose", True)
@@ -145,6 +149,7 @@ def test_qml_material_requirement_is_visible_editable_and_reloaded(qapp, qtbot, 
         click(root2, "materialValue_0")
         qtbot.waitUntil(lambda: control(root2, "sourceInput").property("selectedText") == evidence)
         assert not control(root2, "confirmButton").property("enabled")
+        assert "组内任选其一" in controller2.resultData["materials"][0]["label"]
     finally:
         root2.setProperty("allowClose", True)
         root2.close()
@@ -224,3 +229,41 @@ def test_missing_deadline_citation_keeps_original_words_but_blocks_save(
     )
     saved = service.confirm(draft.id)
     assert NotificationService(service.database).get_todo(saved.id).item.deadline.raw == raw
+
+
+def test_omitted_material_relation_stays_pending_after_save_and_restart(qapp, tmp_path):
+    from campus_notification_assistant.app import create_engine
+
+    source = "请申请器材卡。申请时自行携带学生证/校园卡原件到窗口核验。"
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "申请器材卡", "evidence": "请申请器材卡。"},
+            "materials": [
+                {
+                    "value": "学生证/校园卡原件",
+                    "requirement": "申请时自行携带学生证/校园卡原件到窗口核验",
+                    "evidence": "申请时自行携带学生证/校园卡原件到窗口核验。",
+                }
+            ],
+        },
+    )
+    draft = service.extract(api_key="test")
+    assert draft.item.materials[0].relation is None
+    saved = service.confirm(draft.id)
+    restarted = NotificationService(service.database)
+    engine, controller = create_engine(restarted)
+    root = engine.rootObjects()[0]
+    try:
+        controller.openTodo(saved.id)
+        assert "材料关系待核对（未记录）" in controller.resultData["materials"][0]["label"]
+        assert restarted.get_todo(saved.id).item.materials[0].relation is None
+        assert restarted.get_todo(saved.id).item.materials[0].requirement == (
+            "申请时自行携带学生证/校园卡原件到窗口核验"
+        )
+    finally:
+        root.setProperty("allowClose", True)
+        root.close()
+        engine.deleteLater()
+        qapp.processEvents()

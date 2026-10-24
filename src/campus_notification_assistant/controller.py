@@ -1,12 +1,12 @@
 """Qt 适配层：QML 只绑定状态并调用应用服务操作。"""
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 from PySide6.QtCore import Property, QObject, QRunnable, QThreadPool, Signal, Slot
 
 from .errors import ServiceError
-from .models import CitedText, Deadline, Material, Todo
+from .models import CitedText, Deadline, Material, MaterialRelation, Todo
 from .service import NotificationService
 
 
@@ -112,6 +112,8 @@ class Controller(QObject):
                 label += " · 待核对：无效或位置不明的原文依据"
             if isinstance(field, Material) and not field.requirement.strip():
                 label += " · 材料说明未记录，请对照原文核对"
+            if isinstance(field, Material) and field.relation_label:
+                label += " · " + field.relation_label
             if isinstance(field, Deadline):
                 data["value"] = field.date.isoformat() if field.date else field.raw
                 if field.status == "missing":
@@ -189,6 +191,7 @@ class Controller(QObject):
 
     @Slot(str, str, bool, bool, int, int)
     @Slot(str, str, bool, bool, int, int, str)
+    @Slot(str, str, bool, bool, int, int, str, str)
     def correctField(
         self,
         name: str,
@@ -198,6 +201,7 @@ class Controller(QObject):
         start: int,
         end: int,
         requirement: str | None = None,
+        relation: str = "",
     ) -> None:
         if self._busy or self._selected or self.service.draft is None:
             return
@@ -218,6 +222,7 @@ class Controller(QObject):
                 evidence_start=python_index(start),
                 evidence_end=python_index(end),
                 requirement=requirement,
+                relation=cast(MaterialRelation, relation) if relation else None,
             )
             self._message = "修正已更新，请继续核对。"
         except ServiceError as exc:

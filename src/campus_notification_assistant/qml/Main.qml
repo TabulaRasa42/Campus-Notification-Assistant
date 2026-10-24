@@ -53,6 +53,7 @@ ApplicationWindow {
         property string content: ""
         property string evidence: ""
         property string requirement: ""
+        property string materialRelation: ""
         property string requirementName: ""
         property string valueName: ""
         property string evidenceName: ""
@@ -94,6 +95,7 @@ ApplicationWindow {
                 correctionDialog.fieldKey = citedField.fieldKey
                 correctionValue.text = citedField.content
                 correctionRequirement.text = citedField.requirement
+                correctionRelation.currentIndex = Math.max(0, correctionRelation.indexOfValue(citedField.materialRelation || "uncertain"))
                 supplement.checked = false
                 correctionDialog.open()
             }
@@ -230,6 +232,7 @@ ApplicationWindow {
                                         statusLabel: modelData.label
                                         content: modelData.value
                                         requirement: modelData.requirement || ""
+                                        materialRelation: modelData.relation || ""
                                         requirementName: "materialRequirement_" + index
                                         valueName: "materialValue_" + index
                                         evidenceName: "materialEvidence_" + index
@@ -386,6 +389,22 @@ ApplicationWindow {
                     Accessible.name: "完整材料说明"
                 }
             }
+            Label { visible: correctionDialog.material; text: "组内材料关系" }
+            ComboBox {
+                id: correctionRelation
+                objectName: "correctionRelation"
+                visible: correctionDialog.material
+                Layout.fillWidth: true
+                textRole: "text"
+                valueRole: "value"
+                Accessible.name: "组内材料关系"
+                model: [
+                    {text: "待核对", value: "uncertain"},
+                    {text: "单份材料", value: "single"},
+                    {text: "任选其一", value: "any"},
+                    {text: "全部需要", value: "all"}
+                ]
+            }
             CheckBox { id: supplement; objectName: "supplement"; text: "这是用户补充内容" }
             Button {
                 text: "移除此字段"
@@ -393,7 +412,7 @@ ApplicationWindow {
                 onClicked: { backend.correctField(correctionDialog.fieldKey, "", false, true, 0, 0); correctionDialog.close() }
             }
         }
-        onAccepted: backend.correctField(fieldKey, correctionValue.text, supplement.checked, false, sourceInput.selectionStart, sourceInput.selectionEnd, correctionRequirement.text)
+        onAccepted: backend.correctField(fieldKey, correctionValue.text, supplement.checked, false, sourceInput.selectionStart, sourceInput.selectionEnd, correctionRequirement.text, correctionRelation.currentValue)
     }
     Dialog {
         id: sourceEditDialog

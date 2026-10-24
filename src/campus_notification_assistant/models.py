@@ -6,6 +6,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
 
 NonBlank = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+MaterialRelation = Literal["single", "all", "any", "uncertain"]
 
 
 class ValueModel(BaseModel):
@@ -25,6 +26,17 @@ class Material(CitedText):
     # One material or choice group. Its citation supports the complete requirement.
     # Empty for legacy records; never infer missing conditions on load.
     requirement: str = ""
+    relation: MaterialRelation | None = None
+
+    @property
+    def relation_label(self) -> str:
+        return {
+            None: "材料关系待核对（未记录）",
+            "uncertain": "材料关系待核对",
+            "any": "组内任选其一",
+            "all": "组内全部需要",
+            "single": "",
+        }[self.relation]
 
 
 class Deadline(ValueModel):
