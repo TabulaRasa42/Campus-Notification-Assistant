@@ -655,11 +655,6 @@
           "category": "insufficient_evidence",
           "location": "draft.item.deadline",
           "note": "本轮模型未提供deadline.evidence；服务标invalid且归回待确认，同时将raw原话覆盖为空。完整年月日样例丢失明确日期；M01丢失截止原话。"
-        },
-        {
-          "category": "insufficient_evidence",
-          "location": "draft.item.materials[1].evidence",
-          "note": "首次报名条件和往年豁免引用完整；未覆盖继承的报名时阶段的前句。"
         }
       ],
       "actual": {
@@ -777,11 +772,6 @@
           "category": "insufficient_evidence",
           "location": "draft.item.deadline",
           "note": "本轮模型未提供deadline.evidence；服务标invalid且归回待确认，同时将raw原话覆盖为空。完整年月日样例丢失明确日期；M01丢失截止原话。"
-        },
-        {
-          "category": "insufficient_evidence",
-          "location": "draft.item.materials[1].evidence",
-          "note": "首次报名条件和往年豁免引用完整；未覆盖继承的报名时阶段的前句。"
         },
         {
           "category": "qualifier_distortion",
@@ -904,11 +894,6 @@
           "category": "insufficient_evidence",
           "location": "draft.item.deadline",
           "note": "本轮模型未提供deadline.evidence；服务标invalid且归回待确认，同时将raw原话覆盖为空。完整年月日样例丢失明确日期；M01丢失截止原话。"
-        },
-        {
-          "category": "insufficient_evidence",
-          "location": "draft.item.materials[1].evidence",
-          "note": "首次报名条件和往年豁免引用完整；未覆盖继承的报名时阶段的前句。"
         },
         {
           "category": "qualifier_distortion",

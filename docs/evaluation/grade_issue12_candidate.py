@@ -46,11 +46,8 @@ def main():
                     "仅引用报名时上传部分，缺所有报名者先行条件。",
                 )
             if run["case"] == "M03":
-                add(
-                    "insufficient_evidence",
-                    "draft.item.materials[1].evidence",
-                    "首次报名条件和往年豁免引用完整；未覆盖继承的报名时阶段的前句。",
-                )
+                # This complete condition/exemption quote is the frozen reference.
+                # Do not add a stronger citation requirement than that annotation.
                 if run["trial"] in (2, 3):
                     add(
                         "qualifier_distortion",
