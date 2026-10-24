@@ -21,6 +21,12 @@ class CitedText(ValueModel):
     evidence_end: int | None = None
 
 
+class Material(CitedText):
+    # One material or choice group. Its citation supports the complete requirement.
+    # Empty for legacy records; never infer missing conditions on load.
+    requirement: str = ""
+
+
 class Deadline(ValueModel):
     date: CalendarDate | None = Field(default=None, strict=True)
 
@@ -48,7 +54,7 @@ class Item(ValueModel):
     deadline: Deadline = Field(
         default_factory=lambda: Deadline(status="missing", review="missing", precision="unknown")
     )
-    materials: tuple[CitedText, ...] = ()
+    materials: tuple[Material, ...] = ()
 
     @property
     def evidence_ready(self) -> bool:

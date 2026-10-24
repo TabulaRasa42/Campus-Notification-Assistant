@@ -16,9 +16,9 @@ from pydantic import ValidationError
 from .credentials import DEFAULT_NAMESPACE, Credentials
 from .deepseek import DeepSeek
 from .errors import ServiceError, StaleRequestError
-from .models import CitedText, Deadline, Draft, Item, Todo
+from .models import CitedText, Deadline, Draft, Item, Material, Todo
 
-Citation = TypeVar("Citation", CitedText, Deadline)
+Citation = TypeVar("Citation", CitedText, Deadline, Material)
 FULL_DATE = re.compile(r"(\d{4})[年/\-](\d{1,2})[月/\-](\d{1,2})(?:日)?")
 
 
@@ -249,6 +249,7 @@ class NotificationService:
         evidence_end: int | None = None,
         user_supplied: bool = False,
         remove: bool = False,
+        requirement: str | None = None,
     ) -> Draft:
         with self._state_lock:
             if self.draft is None or self.draft.id != draft_id or self._confirmed_id == draft_id:
@@ -301,6 +302,14 @@ class NotificationService:
                     )
                 else:
                     replacement["value"] = value
+                    if isinstance(old, Material):
+                        replacement["requirement"] = (
+                            requirement.strip()
+                            if requirement is not None
+                            else old.requirement
+                            if value.strip() == old.value
+                            else ""
+                        )
             if field.startswith("materials."):
                 entries = list(data["materials"])
                 if remove:

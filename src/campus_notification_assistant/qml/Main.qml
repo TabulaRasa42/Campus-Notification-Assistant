@@ -1,6 +1,7 @@
 // 核对优先：主信息是通知全文与事项；次信息是日期/材料；依据使用较弱字重。
 // 主操作随状态从“提取信息”切换为“确认保存”；新建与配置为次操作。
 // 灰度先行，使用 Qt 系统控件与中性色；间距 8/16/24，字号 12/14/18/24。
+// 材料名称为主，完整限定说明为正文，依据为次信息；沿用Fusion表单与原有灰度。
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
@@ -51,6 +52,8 @@ ApplicationWindow {
         property string heading: ""
         property string content: ""
         property string evidence: ""
+        property string requirement: ""
+        property string requirementName: ""
         property string valueName: ""
         property string evidenceName: ""
         spacing: 8
@@ -63,6 +66,14 @@ ApplicationWindow {
             font.pixelSize: 18
             font.weight: Font.DemiBold
             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: backend.locateEvidence(citedField.fieldKey) }
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+        }
+        Label {
+            objectName: requirementName
+            visible: requirement.length > 0
+            text: requirement
+            textFormat: Text.PlainText
             wrapMode: Text.Wrap
             Layout.fillWidth: true
         }
@@ -82,6 +93,7 @@ ApplicationWindow {
             onClicked: {
                 correctionDialog.fieldKey = citedField.fieldKey
                 correctionValue.text = citedField.content
+                correctionRequirement.text = citedField.requirement
                 supplement.checked = false
                 correctionDialog.open()
             }
@@ -169,6 +181,7 @@ ApplicationWindow {
                     spacing: 16
                     Label { text: backend.resultHeading; font.pixelSize: 18; font.bold: true }
                     ScrollView {
+                        objectName: "resultsScrollView"
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         clip: true
@@ -216,6 +229,10 @@ ApplicationWindow {
                                         fieldKey: "materials." + index
                                         statusLabel: modelData.label
                                         content: modelData.value
+                                        requirement: modelData.requirement || ""
+                                        requirementName: "materialRequirement_" + index
+                                        valueName: "materialValue_" + index
+                                        evidenceName: "materialEvidence_" + index
                                         evidence: modelData.evidence
                                     }
                                 }
@@ -342,6 +359,7 @@ ApplicationWindow {
         id: correctionDialog
         objectName: "correctionDialog"
         property string fieldKey: ""
+        readonly property bool material: fieldKey.startsWith("materials.")
         title: "修正字段与依据"
         anchors.centerIn: parent
         modal: true
@@ -349,8 +367,25 @@ ApplicationWindow {
         standardButtons: Dialog.Save | Dialog.Cancel
         ColumnLayout {
             width: parent.width
+            spacing: 8
             Label { text: "先在左侧原文选取真实依据，再保存；或明确标为用户补充内容。"; wrapMode: Text.Wrap; Layout.fillWidth: true }
-            TextField { id: correctionValue; objectName: "correctionValue"; Layout.fillWidth: true }
+            Label { text: correctionDialog.material ? "材料名称（原文用词）" : "内容" }
+            TextField { id: correctionValue; objectName: "correctionValue"; Layout.fillWidth: true; Accessible.name: correctionDialog.material ? "材料名称" : "字段内容" }
+            Label { visible: correctionDialog.material; text: "完整材料说明（条件、阶段、处理方式、或／且关系）"; wrapMode: Text.Wrap; Layout.fillWidth: true }
+            ScrollView {
+                visible: correctionDialog.material
+                Layout.fillWidth: true
+                Layout.preferredHeight: 120
+                contentWidth: availableWidth
+                TextArea {
+                    id: correctionRequirement
+                    objectName: "correctionRequirement"
+                    textFormat: TextEdit.PlainText
+                    wrapMode: TextEdit.Wrap
+                    selectByMouse: true
+                    Accessible.name: "完整材料说明"
+                }
+            }
             CheckBox { id: supplement; objectName: "supplement"; text: "这是用户补充内容" }
             Button {
                 text: "移除此字段"
@@ -358,7 +393,7 @@ ApplicationWindow {
                 onClicked: { backend.correctField(correctionDialog.fieldKey, "", false, true, 0, 0); correctionDialog.close() }
             }
         }
-        onAccepted: backend.correctField(fieldKey, correctionValue.text, supplement.checked, false, sourceInput.selectionStart, sourceInput.selectionEnd)
+        onAccepted: backend.correctField(fieldKey, correctionValue.text, supplement.checked, false, sourceInput.selectionStart, sourceInput.selectionEnd, correctionRequirement.text)
     }
     Dialog {
         id: sourceEditDialog

@@ -6,7 +6,7 @@ from typing import Any
 from PySide6.QtCore import Property, QObject, QRunnable, QThreadPool, Signal, Slot
 
 from .errors import ServiceError
-from .models import CitedText, Deadline, Todo
+from .models import CitedText, Deadline, Material, Todo
 from .service import NotificationService
 
 
@@ -110,6 +110,8 @@ class Controller(QObject):
             label = "用户补充内容" if field.origin == "user" else "原文提取"
             if field.review == "invalid":
                 label += " · 待核对：无效或位置不明的原文依据"
+            if isinstance(field, Material) and not field.requirement.strip():
+                label += " · 材料说明未记录，请对照原文核对"
             if isinstance(field, Deadline):
                 data["value"] = field.date.isoformat() if field.date else field.raw
                 if field.status == "missing":
@@ -186,8 +188,16 @@ class Controller(QObject):
         )
 
     @Slot(str, str, bool, bool, int, int)
+    @Slot(str, str, bool, bool, int, int, str)
     def correctField(
-        self, name: str, value: str, user: bool, remove: bool, start: int, end: int
+        self,
+        name: str,
+        value: str,
+        user: bool,
+        remove: bool,
+        start: int,
+        end: int,
+        requirement: str | None = None,
     ) -> None:
         if self._busy or self._selected or self.service.draft is None:
             return
@@ -207,6 +217,7 @@ class Controller(QObject):
                 remove=remove,
                 evidence_start=python_index(start),
                 evidence_end=python_index(end),
+                requirement=requirement,
             )
             self._message = "修正已更新，请继续核对。"
         except ServiceError as exc:
