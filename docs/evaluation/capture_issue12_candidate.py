@@ -1,7 +1,8 @@
-"""Capture all 24 trials of a fixed candidate, only after explicit user approval.
+"""Capture a fixed candidate, only after explicit user approval.
 
 Default invocation checks the manifest without accessing credentials or network.
 Use --run only for an authorized batch. Never overwrite or replace failed trials.
+The default is 24 final trials; --precheck is seven development trials, never a final pass.
 """
 
 import argparse
@@ -82,6 +83,9 @@ def main():
     parser.add_argument(
         "--suite", help="Explicitly approved alternate frozen suite manifest filename"
     )
+    parser.add_argument(
+        "--precheck", action="store_true", help="Seven consumed-case trials, not final evaluation"
+    )
     args = parser.parse_args()
     folder = Path(__file__).resolve().parent
     root = folder.parent.parent
@@ -128,6 +132,14 @@ def main():
     ]
     if len(runs) != 24 or sum(c["split"] == "holdout" for c in corpus["cases"]) != 2:
         raise SystemExit("Expected eight cases, three trials each, including two holdouts.")
+    if args.precheck:
+        runs = [
+            r
+            for r in runs
+            if r["case"] in {"M04", "M10"} or (r["case"] == "M01" and r["trial"] == 1)
+        ]
+        if len(runs) != 7:
+            raise SystemExit("Precheck requires consumed M01 once and M04/M10 three times each.")
     report = {
         "candidate_commit": commit,
         "suite": suite_identity,
@@ -138,8 +150,9 @@ def main():
         "status": "manifest_checked_no_calls",
         "grading": "pending_agent_and_human_review",
         "request_scope": "Only current source and production prompt; no expected or saved todos",
-        "planned_trials": 24,
-        "maximum_http_attempts": 48,
+        "evaluation_kind": "development_precheck_not_final" if args.precheck else "final_candidate",
+        "planned_trials": len(runs),
+        "maximum_http_attempts": 2 * len(runs),
         "runs": runs,
     }
     if not args.run:
