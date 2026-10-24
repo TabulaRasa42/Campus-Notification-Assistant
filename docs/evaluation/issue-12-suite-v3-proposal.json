@@ -1,0 +1,9 @@
+{
+  "status": "proposal_requires_user_approval",
+  "corpus": "issue-12-cases-v3-proposal.json",
+  "protocol": "issue-12-protocol-v3-proposal.md",
+  "lf_sha256": {
+    "issue-12-cases-v3-proposal.json": "daa3eb4fb89321f58c2e9c08795856b6080f30d06e5f26b4ad237f93dc92d50e",
+    "issue-12-protocol-v3-proposal.md": "9f65217293ac81cdc014983ed8e87f636b94a654c1024b9131db073f9c3bec74"
+  }
+}
