@@ -52,12 +52,12 @@ Python 3.12 由 `.python-version` 指定，依赖版本记录在 `uv.lock`。
 ## 验证
 
 ```powershell
-uv run pytest
-uv run mypy
-uv run ruff check .
+uv run python tools/check.py
 ```
 
 测试调用真实应用服务和临时 SQLite。HTTP 响应在网络边界替换。
+该入口依次运行Ruff、mypy、pytest，固定offscreen Qt并禁用评测工具的真实调用；
+GitHub的Windows CI使用同一命令。评测和用户验收流程见[交付约定](docs/agents/delivery.md)。
 自动化测试在外部凭据后端使用隔离的内存替身，不访问真实 Windows 凭据；
 QML 默认可通过 `$env:QT_QPA_PLATFORM = 'offscreen'` 无界面运行。
 生产环境仍只使用 Windows 凭据存储。真实凭据与网络验收和自动化测试分开执行。
