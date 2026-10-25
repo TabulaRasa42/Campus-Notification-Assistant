@@ -17,7 +17,7 @@ from .citation_quality import complete_material_citations, reject_background_act
 from .credentials import DEFAULT_NAMESPACE, Credentials
 from .deepseek import DeepSeek
 from .errors import ServiceError, StaleRequestError
-from .material_scope import exclude_other_stage_materials
+from .material_scope import exclude_other_stage_materials, retain_explicit_shared_subject
 from .models import CitedText, Deadline, Draft, Item, Material, MaterialRelation, Todo
 
 Citation = TypeVar("Citation", CitedText, Deadline, Material)
@@ -236,6 +236,7 @@ class NotificationService:
         )
         item = exclude_other_stage_materials(normalize_item(received, source), source)
         item = complete_material_citations(item, source)
+        item = retain_explicit_shared_subject(item)
         with self._state_lock:
             if generation != self._generation:
                 raise StaleRequestError()

@@ -10,11 +10,9 @@ from test_evidence_time import service_for
 from campus_notification_assistant.service import NotificationService, ServiceError
 
 
-def recorded_service(tmp_path, case, trial):
+def recorded_service(tmp_path, case, trial, capture_name="issue-12-candidate-v3-raw.json"):
     capture = json.loads(
-        (Path(__file__).parents[1] / "docs/evaluation/issue-12-candidate-v3-raw.json").read_text(
-            encoding="utf-8"
-        )
+        (Path(__file__).parents[1] / "docs/evaluation" / capture_name).read_text(encoding="utf-8")
     )
     run = next(r for r in capture["runs"] if (r["case"], r["trial"]) == (case, trial))
     service = NotificationService(
@@ -160,3 +158,121 @@ def test_historical_background_quote_remains_unchanged_on_read(tmp_path):
     restored = NotificationService(service.database).get_todo(data["id"])
     assert restored.item.action.evidence == "比赛通知。"
     assert restored.item.action.review == "matched"
+
+
+def test_recorded_shared_subject_is_visible_in_each_material_requirement(tmp_path):
+    service = recorded_service(tmp_path, "M02", 1, "issue-12-precheck-v6-raw.json")
+    draft = service.extract(api_key="offline-test")
+    assert len(draft.item.materials) == 2
+    for material in draft.item.materials:
+        assert "所有报名者" in material.requirement
+        assert "报名时上传" in material.requirement
+        assert material.relation == "single"
+        assert "所有报名者" in material.evidence
+    saved = service.confirm(draft.id)
+    assert NotificationService(service.database).get_todo(saved.id).item == draft.item
+
+
+def test_shared_subject_is_not_applied_to_a_conditional_material(tmp_path):
+    source = "所有申请者申请时提交申请表，其中校外居住者另交居住证明，校内住宿者免交。"
+    requirement = "校外居住者申请时另交居住证明，校内住宿者免交"
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "申请", "evidence": source},
+            "materials": [{"value": "居住证明", "requirement": requirement, "evidence": source}],
+        },
+    )
+    material = service.extract(api_key="offline-test").item.materials[0]
+    assert material.requirement == requirement
+
+
+def test_shared_subject_is_not_applied_after_the_audience_changes(tmp_path):
+    source = "所有申请者申请时提交申请表，校外居住的申请者上传居住证明。"
+    requirement = "校外居住的申请者上传居住证明"
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "申请", "evidence": source},
+            "materials": [{"value": "居住证明", "requirement": requirement, "evidence": source}],
+        },
+    )
+    assert service.extract(api_key="offline-test").item.materials[0].requirement == requirement
+
+
+def test_shared_subject_is_not_inherited_across_sentences(tmp_path):
+    source = "所有申请者申请时提交申请表。已登记的须交回执。"
+    requirement = "已登记的申请者申请时提交回执"
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "申请", "evidence": source},
+            "materials": [{"value": "回执", "requirement": requirement, "evidence": source}],
+        },
+    )
+    assert service.extract(api_key="offline-test").item.materials[0].requirement == requirement
+
+
+@pytest.mark.parametrize(
+    "source,expected",
+    [
+        ("全体一年级学生申请时须上传申请表。", "全体一年级学生：申请时上传申请表"),
+        ("申请时上传申请表。", "申请时上传申请表"),
+    ],
+)
+def test_only_explicit_shared_subject_is_copied_without_broadening_it(tmp_path, source, expected):
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "提交申请表", "evidence": source},
+            "materials": [
+                {"value": "申请表", "requirement": "申请时上传申请表", "evidence": source}
+            ],
+        },
+    )
+    material = service.extract(api_key="offline-test").item.materials[0]
+    assert material.requirement == expected
+
+
+def test_unfamiliar_conditional_subject_is_not_assumed_universal(tmp_path):
+    source = "所有申请者申请时提交申请表，持有回执的提交回执。"
+    requirement = "申请时提交回执"
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "申请", "evidence": source},
+            "materials": [{"value": "回执", "requirement": requirement, "evidence": source}],
+        },
+    )
+    assert service.extract(api_key="offline-test").item.materials[0].requirement == requirement
+
+
+def test_shared_subject_rule_does_not_rewrite_user_material_correction(tmp_path):
+    source = "所有申请者申请时上传申请表。"
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "申请", "evidence": source},
+            "materials": [
+                {"value": "申请表", "requirement": "申请时上传申请表", "evidence": source}
+            ],
+        },
+    )
+    draft = service.extract(api_key="offline-test")
+    assert draft.item.materials[0].requirement.startswith("所有申请者")
+    requirement = "已手动核对，申请时上传申请表"
+    corrected = service.correct_field(
+        draft.id, "materials.0", "申请表", requirement=requirement, user_supplied=True
+    )
+    assert corrected.item.materials[0].requirement == requirement
+    saved = service.confirm(draft.id)
+    assert (
+        NotificationService(service.database).get_todo(saved.id).item.materials[0].requirement
+        == requirement
+    )

@@ -1,0 +1,563 @@
+{
+  "candidate_commit": "75eb09885fb2d8b14aac072fae54549f3e0e9718",
+  "prompt_sha256": "45efec59e85a6daa74298caec13d6f7a0227bc087e39e04923e59e2ee3d78dc0",
+  "raw_sha256": "2db57f4134164ef95b542e6e28a9a7afd698e397c464e39ea3fea8192ec7cb72",
+  "evaluation_kind": "development_citation_precheck_not_final",
+  "review_status": "agent_review_complete; independent_human_acceptance_pending",
+  "gate": "FAILED_PRECHECK; 5/6 application results; not formal acceptance",
+  "passed_agent_review": 5,
+  "model_raw_passed_agent_review": 3,
+  "total": 6,
+  "http_attempts": 6,
+  "usage": {
+    "prompt_tokens": 10080,
+    "completion_tokens": 743,
+    "total_tokens": 10823
+  },
+  "runs": [
+    {
+      "case": "M01",
+      "trial": 1,
+      "reviewer": "Codex agent; independent human acceptance pending",
+      "passed_agent_review": true,
+      "errors": [],
+      "model_raw_passed_agent_review": true,
+      "model_raw_errors": [],
+      "checks": {
+        "action": "M01引文含报名请求或报名截止要求，支持当前报名；不是只有活动日期。M02当前志愿者报名范围正确。",
+        "deadline": "M01缺年保留24:00并待确认；M02明确2026-11-15、日期精度及逐字依据正确。",
+        "materials": "M01材料为空；M02两项均上传，电子版、一张一寸、且关系及阶段正确；M02/1缺共同主体见errors。",
+        "evidence": "文字与位置均匹配；M02/2和3应用已补全原句、保留共同主体。",
+        "must_exclude": "没有参赛证件、保证书、检查报告或背景事项混入报名材料。"
+      },
+      "actual": {
+        "id": "77d093aa-fd74-4029-8b3c-c0fa1192bc5c",
+        "source": "【2026校运会报名通知】 “中山大学2026年运动会”将于2026年11月7日（周六）在广州校区南校园英东田径场举行，比赛信息如下：  （一）比赛时间、地点 1．时间：2026年11月7日（周六）全天 2．地点：广州校区南校园英东田径场  （二）比赛项目及分组 学生组：田径比赛  男子组：100米、200米、400米、1500米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  女子组：100米、200米、400米、800米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  补充：跳远是助跑跳不是立定跳。  （三）参赛资格 1. 凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。 2. 参赛学生必须经体检合格。其中男子1500米、女子800米参赛者须进行心电图检查，并在赛前检录时签署《身体健康保证书》，承诺身体状况良好，适宜参赛。 3. 中山大学招收的高水平运动员和运动训练专业学生不得报名参赛。  （四）报名要求 1. 径赛每项限报2人（男女分开算）、田赛每项限报1人（男女分开算），如有参赛项目报名超过规定人数，文体部将组织院内筛选。 2. 每人限报2项（另可兼报接力），接力男、女各限报1队。  （五）备注 1. 珠海校区运动员前往南校园的交通安排，以学院后续通知为准。 2. 代表学院参加校运会，综测文体活动加分情况以学院相关规定为准，请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+        "item": {
+          "action": {
+            "value": "报名校运会",
+            "evidence": "请大家积极报名！  报名ddl为10月18日晚24:00",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 614,
+            "evidence_end": 642
+          },
+          "deadline": {
+            "date": null,
+            "evidence": "报名ddl为10月18日晚24:00",
+            "raw": "报名ddl为10月18日晚24:00",
+            "status": "uncertain",
+            "precision": "unknown",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 642
+          },
+          "materials": []
+        }
+      },
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    },
+    {
+      "case": "M01",
+      "trial": 2,
+      "reviewer": "Codex agent; independent human acceptance pending",
+      "passed_agent_review": true,
+      "errors": [],
+      "model_raw_passed_agent_review": true,
+      "model_raw_errors": [],
+      "checks": {
+        "action": "M01引文含报名请求或报名截止要求，支持当前报名；不是只有活动日期。M02当前志愿者报名范围正确。",
+        "deadline": "M01缺年保留24:00并待确认；M02明确2026-11-15、日期精度及逐字依据正确。",
+        "materials": "M01材料为空；M02两项均上传，电子版、一张一寸、且关系及阶段正确；M02/1缺共同主体见errors。",
+        "evidence": "文字与位置均匹配；M02/2和3应用已补全原句、保留共同主体。",
+        "must_exclude": "没有参赛证件、保证书、检查报告或背景事项混入报名材料。"
+      },
+      "actual": {
+        "id": "b7031151-9615-4ce7-89cb-bbbfcdebf23a",
+        "source": "【2026校运会报名通知】 “中山大学2026年运动会”将于2026年11月7日（周六）在广州校区南校园英东田径场举行，比赛信息如下：  （一）比赛时间、地点 1．时间：2026年11月7日（周六）全天 2．地点：广州校区南校园英东田径场  （二）比赛项目及分组 学生组：田径比赛  男子组：100米、200米、400米、1500米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  女子组：100米、200米、400米、800米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  补充：跳远是助跑跳不是立定跳。  （三）参赛资格 1. 凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。 2. 参赛学生必须经体检合格。其中男子1500米、女子800米参赛者须进行心电图检查，并在赛前检录时签署《身体健康保证书》，承诺身体状况良好，适宜参赛。 3. 中山大学招收的高水平运动员和运动训练专业学生不得报名参赛。  （四）报名要求 1. 径赛每项限报2人（男女分开算）、田赛每项限报1人（男女分开算），如有参赛项目报名超过规定人数，文体部将组织院内筛选。 2. 每人限报2项（另可兼报接力），接力男、女各限报1队。  （五）备注 1. 珠海校区运动员前往南校园的交通安排，以学院后续通知为准。 2. 代表学院参加校运会，综测文体活动加分情况以学院相关规定为准，请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+        "item": {
+          "action": {
+            "value": "报名校运会",
+            "evidence": "请大家积极报名！",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 614,
+            "evidence_end": 622
+          },
+          "deadline": {
+            "date": null,
+            "evidence": "报名ddl为10月18日晚24:00",
+            "raw": "报名ddl为10月18日晚24:00",
+            "status": "uncertain",
+            "precision": "unknown",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 642
+          },
+          "materials": []
+        }
+      },
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    },
+    {
+      "case": "M01",
+      "trial": 3,
+      "reviewer": "Codex agent; independent human acceptance pending",
+      "passed_agent_review": true,
+      "errors": [],
+      "model_raw_passed_agent_review": true,
+      "model_raw_errors": [],
+      "checks": {
+        "action": "M01引文含报名请求或报名截止要求，支持当前报名；不是只有活动日期。M02当前志愿者报名范围正确。",
+        "deadline": "M01缺年保留24:00并待确认；M02明确2026-11-15、日期精度及逐字依据正确。",
+        "materials": "M01材料为空；M02两项均上传，电子版、一张一寸、且关系及阶段正确；M02/1缺共同主体见errors。",
+        "evidence": "文字与位置均匹配；M02/2和3应用已补全原句、保留共同主体。",
+        "must_exclude": "没有参赛证件、保证书、检查报告或背景事项混入报名材料。"
+      },
+      "actual": {
+        "id": "c31a032b-4b47-4033-aa01-a6d1d164de1e",
+        "source": "【2026校运会报名通知】 “中山大学2026年运动会”将于2026年11月7日（周六）在广州校区南校园英东田径场举行，比赛信息如下：  （一）比赛时间、地点 1．时间：2026年11月7日（周六）全天 2．地点：广州校区南校园英东田径场  （二）比赛项目及分组 学生组：田径比赛  男子组：100米、200米、400米、1500米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  女子组：100米、200米、400米、800米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  补充：跳远是助跑跳不是立定跳。  （三）参赛资格 1. 凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。 2. 参赛学生必须经体检合格。其中男子1500米、女子800米参赛者须进行心电图检查，并在赛前检录时签署《身体健康保证书》，承诺身体状况良好，适宜参赛。 3. 中山大学招收的高水平运动员和运动训练专业学生不得报名参赛。  （四）报名要求 1. 径赛每项限报2人（男女分开算）、田赛每项限报1人（男女分开算），如有参赛项目报名超过规定人数，文体部将组织院内筛选。 2. 每人限报2项（另可兼报接力），接力男、女各限报1队。  （五）备注 1. 珠海校区运动员前往南校园的交通安排，以学院后续通知为准。 2. 代表学院参加校运会，综测文体活动加分情况以学院相关规定为准，请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+        "item": {
+          "action": {
+            "value": "报名参加2026年校运会",
+            "evidence": "报名ddl为10月18日晚24:00，谢谢！",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 646
+          },
+          "deadline": {
+            "date": null,
+            "evidence": "报名ddl为10月18日晚24:00，谢谢！",
+            "raw": "报名ddl为10月18日晚24:00，谢谢！",
+            "status": "uncertain",
+            "precision": "unknown",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 646
+          },
+          "materials": []
+        }
+      },
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    },
+    {
+      "case": "M02",
+      "trial": 1,
+      "reviewer": "Codex agent; independent human acceptance pending",
+      "passed_agent_review": false,
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0].requirement",
+          "note": "说明保留报名时上传及电子版/一张一寸，但遗漏原文明示的所有报名者；主体仅在引用中，不符合可见说明规则。"
+        },
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[1].requirement",
+          "note": "说明保留报名时上传及电子版/一张一寸，但遗漏原文明示的所有报名者；主体仅在引用中，不符合可见说明规则。"
+        }
+      ],
+      "model_raw_passed_agent_review": false,
+      "model_raw_errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0].requirement",
+          "note": "说明保留报名时上传及电子版/一张一寸，但遗漏原文明示的所有报名者；主体仅在引用中，不符合可见说明规则。"
+        },
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[1].requirement",
+          "note": "说明保留报名时上传及电子版/一张一寸，但遗漏原文明示的所有报名者；主体仅在引用中，不符合可见说明规则。"
+        }
+      ],
+      "checks": {
+        "action": "M01引文含报名请求或报名截止要求，支持当前报名；不是只有活动日期。M02当前志愿者报名范围正确。",
+        "deadline": "M01缺年保留24:00并待确认；M02明确2026-11-15、日期精度及逐字依据正确。",
+        "materials": "M01材料为空；M02两项均上传，电子版、一张一寸、且关系及阶段正确；M02/1缺共同主体见errors。",
+        "evidence": "文字与位置均匹配；M02/2和3应用已补全原句、保留共同主体。",
+        "must_exclude": "没有参赛证件、保证书、检查报告或背景事项混入报名材料。"
+      },
+      "actual": {
+        "id": "a32d199b-c9bd-430a-8bb0-4233bb3d6327",
+        "source": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+        "item": {
+          "action": {
+            "value": "志愿者报名",
+            "evidence": "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 51
+          },
+          "deadline": {
+            "date": "2026-11-15",
+            "evidence": "2026年11月15日前",
+            "raw": "2026年11月15日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 14,
+            "evidence_end": 26
+          },
+          "materials": [
+            {
+              "value": "报名表电子版",
+              "evidence": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 0,
+              "evidence_end": 51,
+              "requirement": "报名时上传报名表电子版",
+              "relation": "single"
+            },
+            {
+              "value": "一张一寸证件照",
+              "evidence": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 0,
+              "evidence_end": 51,
+              "requirement": "报名时上传一张一寸证件照",
+              "relation": "single"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "action": "志愿者报名",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-15"
+        },
+        "materials": [
+          {
+            "names": [
+              "报名表"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "电子版"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          },
+          {
+            "names": [
+              "证件照"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "一张",
+              "一寸"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          }
+        ],
+        "facts": [
+          "报名表和证件照两项均必需，不能变为二选一"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M02",
+      "trial": 2,
+      "reviewer": "Codex agent; independent human acceptance pending",
+      "passed_agent_review": true,
+      "errors": [],
+      "model_raw_passed_agent_review": false,
+      "model_raw_errors": [
+        {
+          "category": "insufficient_evidence",
+          "location": "response.items[0].materials[*].evidence",
+          "note": "原始引用从报名时上传开始，缺共有主体；应用补足原句后已覆盖所有报名者。"
+        }
+      ],
+      "checks": {
+        "action": "M01引文含报名请求或报名截止要求，支持当前报名；不是只有活动日期。M02当前志愿者报名范围正确。",
+        "deadline": "M01缺年保留24:00并待确认；M02明确2026-11-15、日期精度及逐字依据正确。",
+        "materials": "M01材料为空；M02两项均上传，电子版、一张一寸、且关系及阶段正确；M02/1缺共同主体见errors。",
+        "evidence": "文字与位置均匹配；M02/2和3应用已补全原句、保留共同主体。",
+        "must_exclude": "没有参赛证件、保证书、检查报告或背景事项混入报名材料。"
+      },
+      "actual": {
+        "id": "b02e409d-cdaf-4b91-8da2-b13b975e0265",
+        "source": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+        "item": {
+          "action": {
+            "value": "志愿者报名",
+            "evidence": "请所有报名者于2026年11月15日前完成报名",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 30
+          },
+          "deadline": {
+            "date": "2026-11-15",
+            "evidence": "2026年11月15日前",
+            "raw": "2026年11月15日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 14,
+            "evidence_end": 26
+          },
+          "materials": [
+            {
+              "value": "报名表电子版",
+              "evidence": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 0,
+              "evidence_end": 51,
+              "requirement": "所有报名者报名时上传报名表电子版",
+              "relation": "single"
+            },
+            {
+              "value": "一张一寸证件照",
+              "evidence": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 0,
+              "evidence_end": 51,
+              "requirement": "所有报名者报名时上传一张一寸证件照",
+              "relation": "single"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "action": "志愿者报名",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-15"
+        },
+        "materials": [
+          {
+            "names": [
+              "报名表"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "电子版"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          },
+          {
+            "names": [
+              "证件照"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "一张",
+              "一寸"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          }
+        ],
+        "facts": [
+          "报名表和证件照两项均必需，不能变为二选一"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M02",
+      "trial": 3,
+      "reviewer": "Codex agent; independent human acceptance pending",
+      "passed_agent_review": true,
+      "errors": [],
+      "model_raw_passed_agent_review": false,
+      "model_raw_errors": [
+        {
+          "category": "insufficient_evidence",
+          "location": "response.items[0].materials[*].evidence",
+          "note": "原始引用从报名时上传开始，缺共有主体；应用补足原句后已覆盖所有报名者。"
+        }
+      ],
+      "checks": {
+        "action": "M01引文含报名请求或报名截止要求，支持当前报名；不是只有活动日期。M02当前志愿者报名范围正确。",
+        "deadline": "M01缺年保留24:00并待确认；M02明确2026-11-15、日期精度及逐字依据正确。",
+        "materials": "M01材料为空；M02两项均上传，电子版、一张一寸、且关系及阶段正确；M02/1缺共同主体见errors。",
+        "evidence": "文字与位置均匹配；M02/2和3应用已补全原句、保留共同主体。",
+        "must_exclude": "没有参赛证件、保证书、检查报告或背景事项混入报名材料。"
+      },
+      "actual": {
+        "id": "4d3ac510-da92-45a9-b5b7-4c5f4a18074e",
+        "source": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+        "item": {
+          "action": {
+            "value": "志愿者报名",
+            "evidence": "请所有报名者于2026年11月15日前完成报名",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 7,
+            "evidence_end": 30
+          },
+          "deadline": {
+            "date": "2026-11-15",
+            "evidence": "2026年11月15日前",
+            "raw": "2026年11月15日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 14,
+            "evidence_end": 26
+          },
+          "materials": [
+            {
+              "value": "报名表电子版",
+              "evidence": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 0,
+              "evidence_end": 51,
+              "requirement": "所有报名者报名时上传报名表电子版。",
+              "relation": "single"
+            },
+            {
+              "value": "一寸证件照",
+              "evidence": "【志愿者报名】请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 0,
+              "evidence_end": 51,
+              "requirement": "所有报名者报名时上传一张一寸证件照。",
+              "relation": "single"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "action": "志愿者报名",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-15"
+        },
+        "materials": [
+          {
+            "names": [
+              "报名表"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "电子版"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          },
+          {
+            "names": [
+              "证件照"
+            ],
+            "responsibility": "上传",
+            "conditions": "所有报名者",
+            "stage": "报名时",
+            "qualifiers": [
+              "一张",
+              "一寸"
+            ],
+            "relation": "single",
+            "evidence": [
+              "请所有报名者于2026年11月15日前完成报名，报名时上传报名表电子版和一张一寸证件照。"
+            ]
+          }
+        ],
+        "facts": [
+          "报名表和证件照两项均必需，不能变为二选一"
+        ],
+        "must_exclude": []
+      }
+    }
+  ]
+}

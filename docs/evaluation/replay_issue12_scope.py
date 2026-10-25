@@ -45,6 +45,11 @@ def main():
         action="store_true",
         help="Also replay the consumed M01 three-trial precheck and final v3 batch",
     )
+    parser.add_argument(
+        "--include-citation-precheck",
+        action="store_true",
+        help="Replay all consumed batches, including the authorized six citation trials",
+    )
     args = parser.parse_args()
     folder = Path(__file__).resolve().parent
     root = folder.parent.parent
@@ -57,9 +62,11 @@ def main():
     sources = {}
     corpora = ["issue-12-cases.json", "issue-12-cases-v2-proposal.json"]
     captures = list(CAPTURES)
-    if args.include_later_captures:
+    if args.include_later_captures or args.include_citation_precheck:
         corpora.append("issue-12-cases-v3-proposal.json")
         captures.extend(("issue-12-precheck-v5-raw.json", "issue-12-candidate-v3-raw.json"))
+    if args.include_citation_precheck:
+        captures.append("issue-12-precheck-v6-raw.json")
     for name in corpora:
         for case in json.loads((folder / name).read_text(encoding="utf-8"))["cases"]:
             sources[case["id"]] = case["source"]
