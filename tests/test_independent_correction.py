@@ -47,6 +47,59 @@ def test_deadline_edit_is_kept_without_inheriting_an_unrelated_date(tmp_path):
         service.confirm(draft.id)
 
 
+def test_other_field_operations_keep_an_unresolved_deadline_edit(tmp_path):
+    source = "请于2028年4月11日前办理阅览证。办理时携带学生证。"
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "办理阅览证", "evidence": source},
+            "deadline": {"date": "2028-04-11", "evidence": "2028年4月11日前"},
+            "materials": [{"value": "学生证", "evidence": "办理时携带学生证。"}],
+        },
+    )
+    draft = service.extract(api_key="offline-test")
+    edited = service.correct_field(draft.id, "deadline", "4月12日前").item.deadline
+    updated = service.correct_field(draft.id, "action", "办理临时阅览证")
+    assert updated.item.deadline == edited
+    quote = "办理时携带学生证。"
+    start = source.index(quote)
+    selected = service.select_evidence(draft.id, "materials.0", start, start + len(quote))
+    assert selected.item.deadline == edited
+    with pytest.raises(ServiceError):
+        service.confirm(draft.id)
+    assert NotificationService(service.database).list_todos() == []
+    service.correct_field(draft.id, "deadline", "4月12日前", user_supplied=True)
+    saved = service.confirm(draft.id)
+    restored = NotificationService(service.database).get_todo(saved.id)
+    assert restored.item.deadline.raw == "4月12日前"
+    assert restored.item.deadline.origin == "user"
+
+
+def test_resubmitting_an_unresolved_deadline_edit_keeps_review_required(tmp_path):
+    source = "请于2028年4月11日前办理阅览证。"
+    service = service_for(
+        tmp_path,
+        source,
+        {
+            "action": {"value": "办理阅览证", "evidence": source},
+            "deadline": {"date": "2028-04-11", "evidence": "2028年4月11日前"},
+        },
+    )
+    draft = service.extract(api_key="offline-test")
+    edited = service.correct_field(draft.id, "deadline", "4月12日前").item.deadline
+    repeated = service.correct_field(draft.id, "deadline", "4月12日前")
+    assert repeated.item.deadline == edited
+    with pytest.raises(ServiceError):
+        service.confirm(draft.id)
+    quote = "2028年4月11日前"
+    start = source.index(quote)
+    selected = service.select_evidence(draft.id, "deadline", start, start + len(quote))
+    assert selected.item.deadline.review == "matched"
+    assert selected.item.deadline.raw == quote
+    assert selected.item.deadline.date is None
+
+
 def test_qml_edit_does_not_require_a_selection_in_the_notice(qapp, qtbot, tmp_path):
     from test_qml import click, control
 

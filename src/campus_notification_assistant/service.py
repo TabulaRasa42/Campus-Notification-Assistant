@@ -316,12 +316,13 @@ class NotificationService:
                         replacement.update(
                             raw=value, date=None, status="uncertain", precision="unknown"
                         )
-                        deadline_needs_review = (
-                            not user_supplied
-                            and old.origin != "user"
-                            and evidence_start is None
-                            and evidence_end is None
-                        )
+                    deadline_needs_review = (
+                        not user_supplied
+                        and old.origin != "user"
+                        and evidence_start is None
+                        and evidence_end is None
+                        and (not unchanged or old.review == "invalid")
+                    )
                 else:
                     replacement["value"] = value
                     if isinstance(old, Material):
@@ -353,6 +354,8 @@ class NotificationService:
             else:
                 data[field] = replacement
             corrected = normalize_item(Item.model_validate(data), self.source)
+            if field != "deadline":
+                corrected = corrected.model_copy(update={"deadline": item.deadline})
             if deadline_needs_review:
                 # Retain an independent edit without letting the previous citation
                 # silently overwrite it or validate a different deadline.
@@ -395,6 +398,8 @@ class NotificationService:
                 evidence_end=end,
             )
             corrected = normalize_item(Item.model_validate(data), self.source)
+            if field != "deadline":
+                corrected = corrected.model_copy(update={"deadline": self.draft.item.deadline})
             self.draft = self.draft.model_copy(update={"item": corrected})
             return self.draft
 
