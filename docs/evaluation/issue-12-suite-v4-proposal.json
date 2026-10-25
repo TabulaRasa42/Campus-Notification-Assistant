@@ -1,0 +1,10 @@
+{
+  "status": "proposal_requires_user_approval",
+  "candidate_commit": "1915eca11a96230fa3e5a6e4ff55d964fb13b0fd",
+  "corpus": "issue-12-cases-v4-proposal.json",
+  "protocol": "issue-12-protocol-v4-proposal.md",
+  "lf_sha256": {
+    "issue-12-cases-v4-proposal.json": "b2fdcc449f1da94130647f5a59ba8b6d9eb792a48d0d925709eb6faffab6ac1c",
+    "issue-12-protocol-v4-proposal.md": "495eaeceac4b33201c54b7c72aec949a09e33e804ee8f60a97e30b0b1ae3a4c1"
+  }
+}
