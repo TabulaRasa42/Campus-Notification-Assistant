@@ -1,0 +1,9 @@
+{
+  "status": "user_approved_2026-10-25",
+  "corpus": "issue-12-cases-v3-proposal.json",
+  "protocol": "issue-12-protocol-v3-final.md",
+  "lf_sha256": {
+    "issue-12-cases-v3-proposal.json": "daa3eb4fb89321f58c2e9c08795856b6080f30d06e5f26b4ad237f93dc92d50e",
+    "issue-12-protocol-v3-final.md": "12e2bebb8264df8bf0048a5ba22eda9d375011c743cca51fa263e47021304104"
+  }
+}
