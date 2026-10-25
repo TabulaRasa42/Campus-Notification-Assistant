@@ -6,12 +6,15 @@
 
 ## 安全的离线界面
 
-在仓库根目录执行以下命令。工具使用本批真实调用的录制响应、内存凭据和临时SQLite，
+先切换到下面的专项工作树。`E:\Program\Campus-Notification-Assistant` 主目录中没有本分支的验收工具。
+只复制代码框内的命令，不复制代码框的 ` ```powershell ` 或 ` ``` ` 标记。
+工具使用本批真实调用的录制响应、内存凭据和临时SQLite，
 不会联网或读写真实待办库。窗口标题含“离线验收”，关闭进程后临时数据清理。
 界面“API Key已配置”对应内存中的离线占位值，不是真实密钥。
 
 ```powershell
-.venv/Scripts/python.exe -X utf8 tools/review_issue12.py --case M01 --trial 1
+Set-Location -LiteralPath 'E:\Program\Codex\.codex\worktrees\dd56\Campus-Notification-Assistant'
+.\.venv\Scripts\python.exe -X utf8 .\tools\review_issue12.py --case M01 --trial 1
 ```
 
 1. 点击事项，检查左侧定位的只是比赛介绍，不能支持报名动作。
