@@ -37,9 +37,8 @@ class MemoryKeyring(KeyringBackend):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--case", choices=("M01", "M02", "M03", "M04", "M05", "M06", "M11", "M12"), required=True
-    )
+    parser.add_argument("--case", required=True, help="Case id present in the selected capture")
+    parser.add_argument("--capture", default="issue-12-candidate-v3-raw.json")
     parser.add_argument("--trial", type=int, choices=(1, 2, 3), default=1)
     parser.add_argument("--verify-correction", action="store_true")
     parser.add_argument(
@@ -47,8 +46,13 @@ def main():
     )
     args = parser.parse_args()
     folder = Path(__file__).resolve().parents[1] / "docs" / "evaluation"
-    raw = json.loads((folder / "issue-12-candidate-v3-raw.json").read_text(encoding="utf-8"))
-    run = next(r for r in raw["runs"] if (r["case"], r["trial"]) == (args.case, args.trial))
+    capture_path = folder / args.capture
+    if capture_path.parent.resolve() != folder:
+        parser.error("录制文件须位于docs/evaluation目录中。")
+    raw = json.loads(capture_path.read_text(encoding="utf-8"))
+    run = next((r for r in raw["runs"] if (r["case"], r["trial"]) == (args.case, args.trial)), None)
+    if run is None or not run.get("draft"):
+        parser.error("该录制文件没有指定样例／轮次的草稿，请检查--capture、--case和--trial。")
     response = {"choices": run["attempts"][-1]["choices"]}
     with tempfile.TemporaryDirectory(prefix="campus-issue12-offline-review-") as temporary:
         service = NotificationService(
@@ -64,7 +68,8 @@ def main():
             print("使用当前版本重放：引用校验或上下文可能更新，历史记录和评分不变。")
         if args.verify_correction:
             corrected_fields = []
-            if (args.case, args.trial) == ("M01", 1):
+            legacy = capture_path.name == "issue-12-candidate-v3-raw.json"
+            if legacy and (args.case, args.trial) == ("M01", 1):
                 quote = "请大家积极报名！"
                 start = source.index(quote)
                 service.correct_field(
@@ -75,7 +80,7 @@ def main():
                     evidence_end=start + len(quote),
                 )
                 corrected_fields.append("action.evidence")
-            if (args.case, args.trial) == ("M02", 3):
+            if legacy and (args.case, args.trial) == ("M02", 3):
                 start = source.index("请所有报名者")
                 for index, material in enumerate(draft.item.materials):
                     service.correct_field(
@@ -94,6 +99,7 @@ def main():
                 json.dumps(
                     {
                         "case": args.case,
+                        "capture": args.capture,
                         "trial": args.trial,
                         "new_api_calls": 0,
                         "corrected_fields": corrected_fields,
@@ -121,7 +127,7 @@ def main():
 
             def capture():
                 try:
-                    if args.case == "M12":
+                    if args.case in {"M12", "M13", "M14"}:
                         scroll = root.findChild(QQuickItem, "resultsScrollView")
                         content = scroll.property("contentItem")
                         content.setProperty(
