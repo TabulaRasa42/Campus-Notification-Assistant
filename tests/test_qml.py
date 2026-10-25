@@ -102,7 +102,13 @@ def test_qml_background_extract_review_save_and_open(ui, qtbot):
     qtbot.waitUntil(lambda: find_control(root, "todoButton") is not None)
     click(root, "todoButton")
     assert control(root, "sourceInput").property("text") == SOURCE
-    assert "2026年11月15日前" in control(root, "deadlineEvidence").property("text")
+    click(root, "chooseEvidence_deadline")
+    qtbot.waitUntil(lambda: control(root, "evidenceDialog").property("opened"))
+    qtbot.waitUntil(
+        lambda: "2026年11月15日前" in control(root, "evidenceInput").property("selectedText")
+    )
+    assert not control(root, "evidenceApply").property("visible")
+    control(root, "evidenceDialog").reject()
 
 
 def test_qml_prompts_before_discarding_unsaved_input(ui, qtbot):

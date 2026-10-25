@@ -107,20 +107,20 @@ class Controller(QObject):
 
         def display(field: CitedText | Deadline) -> dict[str, Any]:
             data = field.model_dump(mode="json")
-            label = "用户补充内容" if field.origin == "user" else "原文提取"
+            statuses = ["用户补充内容"] if field.origin == "user" else []
             if field.review == "invalid":
-                label += " · 待核对：无效或位置不明的原文依据"
+                statuses.append("依据待核对")
             if isinstance(field, Material) and not field.requirement.strip():
-                label += " · 材料说明未记录，请对照原文核对"
+                statuses.append("材料说明未记录，请对照原文核对")
             if isinstance(field, Material) and field.relation_label:
-                label += " · " + field.relation_label
+                statuses.append(field.relation_label)
             if isinstance(field, Deadline):
                 data["value"] = field.date.isoformat() if field.date else field.raw
                 if field.status == "missing":
                     data["value"] = "原文未提及"
                 elif field.status == "uncertain":
-                    label += " · 待确认时间"
-            data["label"] = label
+                    statuses.append("待确认时间")
+            data["label"] = " · ".join(statuses)
             return data
 
         return {
@@ -219,8 +219,8 @@ class Controller(QObject):
                 value,
                 user_supplied=user,
                 remove=remove,
-                evidence_start=python_index(start),
-                evidence_end=python_index(end),
+                evidence_start=python_index(start) if start >= 0 else None,
+                evidence_end=python_index(end) if end >= 0 else None,
                 requirement=requirement,
                 relation=cast(MaterialRelation, relation) if relation else None,
             )
@@ -232,6 +232,25 @@ class Controller(QObject):
     @Property(bool, notify=changed)
     def duplicatePending(self) -> bool:
         return self._duplicate_source is not None
+
+    @Slot(str, int, int)
+    def selectEvidence(self, name: str, start: int, end: int) -> None:
+        if self._busy or self._selected or self.service.draft is None:
+            return
+        encoded = self.service.source.encode("utf-16-le")
+        try:
+            if not 0 <= start < end <= len(encoded) // 2:
+                raise ServiceError("请选择通知原文中的依据。")
+            self.service.select_evidence(
+                self.service.draft.id,
+                name,
+                len(encoded[: start * 2].decode("utf-16-le", errors="ignore")),
+                len(encoded[: end * 2].decode("utf-16-le", errors="ignore")),
+            )
+            self._message = "依据已更新。"
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
 
     @Property("QVariantList", notify=changed)  # type: ignore[arg-type]
     def duplicateTodos(self) -> list[dict[str, str]]:

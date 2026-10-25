@@ -1,7 +1,7 @@
-// 核对优先：主信息是通知全文与事项；次信息是日期/材料；依据使用较弱字重。
+// 核对优先：主信息是通知全文与事项；次信息是日期/材料；只展示必要状态。
 // 主操作随状态从“提取信息”切换为“确认保存”；新建与配置为次操作。
 // 灰度先行，使用 Qt 系统控件与中性色；间距 8/16/24，字号 12/14/18/24。
-// 材料名称为主，完整限定说明为正文，依据为次信息；沿用Fusion表单与原有灰度。
+// 材料名称为主，完整限定说明为正文；修正和独立依据窗口分开，沿用Fusion表单与灰度。
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
@@ -57,6 +57,8 @@ ApplicationWindow {
         property string requirementName: ""
         property string valueName: ""
         property string evidenceName: ""
+        property bool evidenceMatched: false
+        property bool userSupplied: false
         spacing: 8
         Layout.fillWidth: true
         Label { visible: heading.length > 0; text: heading; color: "#525252"; font.pixelSize: 12 }
@@ -80,24 +82,41 @@ ApplicationWindow {
         }
         Label {
             objectName: evidenceName
-            text: statusLabel + "\n原文依据：" + (evidence || "原文未提及")
+            visible: statusLabel.length > 0
+            text: statusLabel
             textFormat: Text.PlainText
             color: "#525252"
             wrapMode: Text.Wrap
             Layout.fillWidth: true
         }
-        Button {
-            objectName: citedField.fieldKey === "action" ? "actionCorrection" : "correction_" + citedField.fieldKey
-            text: "修正 / 选择依据"
-            visible: backend.unsaved && window.hasResult
-            enabled: !backend.busy
-            onClicked: {
-                correctionDialog.fieldKey = citedField.fieldKey
-                correctionValue.text = citedField.content
-                correctionRequirement.text = citedField.requirement
-                correctionRelation.currentIndex = Math.max(0, correctionRelation.indexOfValue(citedField.materialRelation || "uncertain"))
-                supplement.checked = false
-                correctionDialog.open()
+        RowLayout {
+            spacing: 8
+            Button {
+                objectName: citedField.fieldKey === "action" ? "actionCorrection" : "correction_" + citedField.fieldKey
+                text: "修正"
+                visible: backend.unsaved && window.hasResult
+                enabled: !backend.busy
+                onClicked: {
+                    correctionDialog.fieldKey = citedField.fieldKey
+                    correctionValue.text = citedField.content
+                    correctionRequirement.text = citedField.requirement
+                    correctionRelation.currentIndex = Math.max(0, correctionRelation.indexOfValue(citedField.materialRelation || "uncertain"))
+                    supplement.checked = citedField.userSupplied
+                    correctionDialog.open()
+                }
+            }
+            Button {
+                objectName: "chooseEvidence_" + citedField.fieldKey
+                text: backend.unsaved ? "选择依据" : "查看依据"
+                enabled: !backend.busy
+                onClicked: {
+                    evidenceDialog.fieldKey = citedField.fieldKey
+                    evidenceInput.deselect()
+                    evidenceDialog.open()
+                    Qt.callLater(function() {
+                        if (citedField.evidenceMatched) backend.locateEvidence(citedField.fieldKey)
+                    })
+                }
             }
         }
     }
@@ -105,8 +124,13 @@ ApplicationWindow {
     Connections {
         target: backend
         function onEvidenceSelected(start, end) {
-            sourceInput.forceActiveFocus()
-            sourceInput.select(start, end)
+            if (evidenceDialog.opened) {
+                evidenceInput.forceActiveFocus()
+                evidenceInput.select(start, end)
+            } else {
+                sourceInput.forceActiveFocus()
+                sourceInput.select(start, end)
+            }
         }
     }
 
@@ -206,16 +230,20 @@ ApplicationWindow {
                                 content: backend.resultData.action ? backend.resultData.action.value : ""
                                 evidence: backend.resultData.action ? backend.resultData.action.evidence : ""
                                 valueName: "actionValue"
+                                evidenceMatched: !!backend.resultData.action && backend.resultData.action.review === "matched" && backend.resultData.action.origin !== "user"
+                                userSupplied: !!backend.resultData.action && backend.resultData.action.origin === "user"
                             }
                             CitedField {
                                 visible: window.hasResult
-                                heading: "截止时间 · 不推算，无默认时刻"
+                                heading: "截止时间"
                                 fieldKey: "deadline"
                                 statusLabel: backend.resultData.deadline ? backend.resultData.deadline.label : ""
                                 content: backend.resultData.deadline ? backend.resultData.deadline.value : ""
                                 evidence: backend.resultData.deadline ? backend.resultData.deadline.evidence : ""
                                 valueName: "deadlineValue"
                                 evidenceName: "deadlineEvidence"
+                                evidenceMatched: !!backend.resultData.deadline && backend.resultData.deadline.review === "matched" && backend.resultData.deadline.origin !== "user"
+                                userSupplied: !!backend.resultData.deadline && backend.resultData.deadline.origin === "user"
                             }
                             ColumnLayout {
                                 visible: window.hasResult
@@ -241,6 +269,8 @@ ApplicationWindow {
                                         valueName: "materialValue_" + index
                                         evidenceName: "materialEvidence_" + index
                                         evidence: modelData.evidence
+                                        evidenceMatched: modelData.review === "matched" && modelData.origin !== "user"
+                                        userSupplied: modelData.origin === "user"
                                     }
                                 }
                             }
@@ -363,11 +393,61 @@ ApplicationWindow {
     }
 
     Dialog {
+        id: evidenceDialog
+        objectName: "evidenceDialog"
+        property string fieldKey: ""
+        title: backend.unsaved ? "选择依据" : "查看依据"
+        anchors.centerIn: parent
+        modal: true
+        width: Math.min(760, window.width - 80)
+        height: Math.min(600, window.height - 80)
+        contentItem: ColumnLayout {
+            spacing: 16
+            Label {
+                visible: backend.unsaved
+                text: "选中支持该字段的完整原文片段。"
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+            }
+            ScrollView {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                contentWidth: availableWidth
+                clip: true
+                TextArea {
+                    id: evidenceInput
+                    objectName: "evidenceInput"
+                    text: backend.sourceText
+                    readOnly: true
+                    selectByMouse: true
+                    persistentSelection: true
+                    textFormat: TextEdit.PlainText
+                    wrapMode: TextEdit.Wrap
+                    Accessible.name: "选择原文依据"
+                }
+            }
+        }
+        footer: DialogButtonBox {
+            Button {
+                objectName: "evidenceApply"
+                text: "使用所选文字"
+                visible: backend.unsaved
+                enabled: !backend.busy && evidenceInput.selectionEnd > evidenceInput.selectionStart
+                DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+            }
+            Button {
+                text: backend.unsaved ? "取消" : "关闭"
+                DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+            }
+        }
+        onAccepted: if (backend.unsaved) backend.selectEvidence(fieldKey, evidenceInput.selectionStart, evidenceInput.selectionEnd)
+    }
+    Dialog {
         id: correctionDialog
         objectName: "correctionDialog"
         property string fieldKey: ""
         readonly property bool material: fieldKey.startsWith("materials.")
-        title: "修正字段与依据"
+        title: "修正字段"
         anchors.centerIn: parent
         modal: true
         width: 460
@@ -375,7 +455,6 @@ ApplicationWindow {
         ColumnLayout {
             width: parent.width
             spacing: 8
-            Label { text: "先在左侧原文选取真实依据，再保存；或明确标为用户补充内容。"; wrapMode: Text.Wrap; Layout.fillWidth: true }
             Label { text: correctionDialog.material ? "材料名称（原文用词）" : "内容" }
             TextField { id: correctionValue; objectName: "correctionValue"; Layout.fillWidth: true; Accessible.name: correctionDialog.material ? "材料名称" : "字段内容" }
             Label { visible: correctionDialog.material; text: "完整材料说明（条件、阶段、处理方式、或／且关系）"; wrapMode: Text.Wrap; Layout.fillWidth: true }
@@ -416,7 +495,7 @@ ApplicationWindow {
                 onClicked: { backend.correctField(correctionDialog.fieldKey, "", false, true, 0, 0); correctionDialog.close() }
             }
         }
-        onAccepted: backend.correctField(fieldKey, correctionValue.text, supplement.checked, false, sourceInput.selectionStart, sourceInput.selectionEnd, correctionRequirement.text, correctionRelation.currentValue)
+        onAccepted: backend.correctField(fieldKey, correctionValue.text, supplement.checked, false, -1, -1, correctionRequirement.text, correctionRelation.currentValue)
     }
     Dialog {
         id: sourceEditDialog
