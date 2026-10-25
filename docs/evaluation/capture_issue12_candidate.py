@@ -90,6 +90,11 @@ def main():
     precheck.add_argument(
         "--m01-precheck", action="store_true", help="Only consumed M01, three development trials"
     )
+    precheck.add_argument(
+        "--citation-precheck",
+        action="store_true",
+        help="Consumed M01/M02, three trials each; never final evaluation",
+    )
     args = parser.parse_args()
     folder = Path(__file__).resolve().parent
     root = folder.parent.parent
@@ -148,6 +153,10 @@ def main():
         runs = [r for r in runs if r["case"] == "M01"]
         if len(runs) != 3:
             raise SystemExit("M01 precheck requires exactly three consumed-case trials.")
+    if args.citation_precheck:
+        runs = [r for r in runs if r["case"] in {"M01", "M02"}]
+        if len(runs) != 6:
+            raise SystemExit("Citation precheck requires consumed M01/M02 three times each.")
     report = {
         "candidate_commit": commit,
         "suite": suite_identity,
@@ -159,7 +168,9 @@ def main():
         "grading": "pending_agent_and_human_review",
         "request_scope": "Only current source and production prompt; no expected or saved todos",
         "evaluation_kind": (
-            "development_m01_precheck_not_final"
+            "development_citation_precheck_not_final"
+            if args.citation_precheck
+            else "development_m01_precheck_not_final"
             if args.m01_precheck
             else "development_precheck_not_final"
             if args.precheck
