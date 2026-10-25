@@ -1,0 +1,217 @@
+{
+  "candidate_commit": "d00330bfe8da75201a181eb3e36e7f9a59ddf090",
+  "prompt_sha256": "ebf9f312d39de746588a6d5f1aacdab0a1b22aa810b88278a281cb4d22a4af03",
+  "raw_sha256": "df127d5b9a7fc732ed47c5c311dff3fba1aa44219f22a7858979ef5383dabbfc",
+  "evaluation_kind": "development_m01_precheck_not_final",
+  "review_status": "agent_review_complete; independent_human_acceptance_pending",
+  "passed_agent_review": 3,
+  "model_raw_passed_agent_review": 2,
+  "total": 3,
+  "gate": "M01_ONLY; 3/3 application drafts; not formal 24-trial acceptance",
+  "http_attempts": 3,
+  "usage": {
+    "prompt_tokens": 5418,
+    "completion_tokens": 401,
+    "total_tokens": 5819
+  },
+  "runs": [
+    {
+      "case": "M01",
+      "trial": 1,
+      "reviewer": "Codex agent; independent human acceptance pending",
+      "passed_agent_review": true,
+      "errors": [],
+      "model_raw_passed_agent_review": true,
+      "model_raw_errors": [],
+      "checks": {
+        "action": "只有校运会报名事项；未扩大为整个比赛，无资格或检查待办",
+        "deadline": "保留10月18日晚24:00；缺年待确认、date为空，未采用标题年或比赛日期",
+        "materials": "应用材料为空，不解释为无需材料；第2轮排除模型误收两项，其余原始即为空",
+        "must_exclude": "参赛证件、保证书、体检及心电图报告、资格和背景安排均不在报名材料中",
+        "evidence": "事项及截止引文与原文连续片段及位置相符；第2轮事项引文保留原文双空格"
+      },
+      "save_restart_verified_by_recorded_response": true,
+      "actual": {
+        "id": "b661be60-4c7f-44f8-a25b-0e58ef4e55ab",
+        "source": "【2026校运会报名通知】 “中山大学2026年运动会”将于2026年11月7日（周六）在广州校区南校园英东田径场举行，比赛信息如下：  （一）比赛时间、地点 1．时间：2026年11月7日（周六）全天 2．地点：广州校区南校园英东田径场  （二）比赛项目及分组 学生组：田径比赛  男子组：100米、200米、400米、1500米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  女子组：100米、200米、400米、800米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  补充：跳远是助跑跳不是立定跳。  （三）参赛资格 1. 凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。 2. 参赛学生必须经体检合格。其中男子1500米、女子800米参赛者须进行心电图检查，并在赛前检录时签署《身体健康保证书》，承诺身体状况良好，适宜参赛。 3. 中山大学招收的高水平运动员和运动训练专业学生不得报名参赛。  （四）报名要求 1. 径赛每项限报2人（男女分开算）、田赛每项限报1人（男女分开算），如有参赛项目报名超过规定人数，文体部将组织院内筛选。 2. 每人限报2项（另可兼报接力），接力男、女各限报1队。  （五）备注 1. 珠海校区运动员前往南校园的交通安排，以学院后续通知为准。 2. 代表学院参加校运会，综测文体活动加分情况以学院相关规定为准，请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+        "item": {
+          "action": {
+            "value": "报名参加2026年校运会",
+            "evidence": "请大家积极报名！",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 614,
+            "evidence_end": 622
+          },
+          "deadline": {
+            "date": null,
+            "evidence": "报名ddl为10月18日晚24:00",
+            "raw": "报名ddl为10月18日晚24:00",
+            "status": "uncertain",
+            "precision": "unknown",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 642
+          },
+          "materials": []
+        }
+      },
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    },
+    {
+      "case": "M01",
+      "trial": 2,
+      "reviewer": "Codex agent; independent human acceptance pending",
+      "passed_agent_review": true,
+      "errors": [],
+      "model_raw_passed_agent_review": false,
+      "model_raw_errors": [
+        {
+          "category": "false_inclusion_or_misattribution",
+          "location": "response.items[0].materials[0:2]",
+          "note": "模型误收参赛备查的学生证和校园卡；应用按原文阶段排除这两项。"
+        }
+      ],
+      "checks": {
+        "action": "只有校运会报名事项；未扩大为整个比赛，无资格或检查待办",
+        "deadline": "保留10月18日晚24:00；缺年待确认、date为空，未采用标题年或比赛日期",
+        "materials": "应用材料为空，不解释为无需材料；第2轮排除模型误收两项，其余原始即为空",
+        "must_exclude": "参赛证件、保证书、体检及心电图报告、资格和背景安排均不在报名材料中",
+        "evidence": "事项及截止引文与原文连续片段及位置相符；第2轮事项引文保留原文双空格"
+      },
+      "save_restart_verified_by_recorded_response": true,
+      "actual": {
+        "id": "980fa1c5-5f6e-42c1-a42d-6ec8f69520cf",
+        "source": "【2026校运会报名通知】 “中山大学2026年运动会”将于2026年11月7日（周六）在广州校区南校园英东田径场举行，比赛信息如下：  （一）比赛时间、地点 1．时间：2026年11月7日（周六）全天 2．地点：广州校区南校园英东田径场  （二）比赛项目及分组 学生组：田径比赛  男子组：100米、200米、400米、1500米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  女子组：100米、200米、400米、800米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  补充：跳远是助跑跳不是立定跳。  （三）参赛资格 1. 凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。 2. 参赛学生必须经体检合格。其中男子1500米、女子800米参赛者须进行心电图检查，并在赛前检录时签署《身体健康保证书》，承诺身体状况良好，适宜参赛。 3. 中山大学招收的高水平运动员和运动训练专业学生不得报名参赛。  （四）报名要求 1. 径赛每项限报2人（男女分开算）、田赛每项限报1人（男女分开算），如有参赛项目报名超过规定人数，文体部将组织院内筛选。 2. 每人限报2项（另可兼报接力），接力男、女各限报1队。  （五）备注 1. 珠海校区运动员前往南校园的交通安排，以学院后续通知为准。 2. 代表学院参加校运会，综测文体活动加分情况以学院相关规定为准，请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+        "item": {
+          "action": {
+            "value": "报名参加2026年校运会",
+            "evidence": "请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 614,
+            "evidence_end": 646
+          },
+          "deadline": {
+            "date": null,
+            "evidence": "报名ddl为10月18日晚24:00",
+            "raw": "报名ddl为10月18日晚24:00",
+            "status": "uncertain",
+            "precision": "unknown",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 642
+          },
+          "materials": []
+        }
+      },
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    },
+    {
+      "case": "M01",
+      "trial": 3,
+      "reviewer": "Codex agent; independent human acceptance pending",
+      "passed_agent_review": true,
+      "errors": [],
+      "model_raw_passed_agent_review": true,
+      "model_raw_errors": [],
+      "checks": {
+        "action": "只有校运会报名事项；未扩大为整个比赛，无资格或检查待办",
+        "deadline": "保留10月18日晚24:00；缺年待确认、date为空，未采用标题年或比赛日期",
+        "materials": "应用材料为空，不解释为无需材料；第2轮排除模型误收两项，其余原始即为空",
+        "must_exclude": "参赛证件、保证书、体检及心电图报告、资格和背景安排均不在报名材料中",
+        "evidence": "事项及截止引文与原文连续片段及位置相符；第2轮事项引文保留原文双空格"
+      },
+      "save_restart_verified_by_recorded_response": true,
+      "actual": {
+        "id": "e1be9209-04c8-4662-9c86-82e3ec0e4ac3",
+        "source": "【2026校运会报名通知】 “中山大学2026年运动会”将于2026年11月7日（周六）在广州校区南校园英东田径场举行，比赛信息如下：  （一）比赛时间、地点 1．时间：2026年11月7日（周六）全天 2．地点：广州校区南校园英东田径场  （二）比赛项目及分组 学生组：田径比赛  男子组：100米、200米、400米、1500米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  女子组：100米、200米、400米、800米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  补充：跳远是助跑跳不是立定跳。  （三）参赛资格 1. 凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。 2. 参赛学生必须经体检合格。其中男子1500米、女子800米参赛者须进行心电图检查，并在赛前检录时签署《身体健康保证书》，承诺身体状况良好，适宜参赛。 3. 中山大学招收的高水平运动员和运动训练专业学生不得报名参赛。  （四）报名要求 1. 径赛每项限报2人（男女分开算）、田赛每项限报1人（男女分开算），如有参赛项目报名超过规定人数，文体部将组织院内筛选。 2. 每人限报2项（另可兼报接力），接力男、女各限报1队。  （五）备注 1. 珠海校区运动员前往南校园的交通安排，以学院后续通知为准。 2. 代表学院参加校运会，综测文体活动加分情况以学院相关规定为准，请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+        "item": {
+          "action": {
+            "value": "报名参加中山大学2026年运动会",
+            "evidence": "请大家积极报名！",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 614,
+            "evidence_end": 622
+          },
+          "deadline": {
+            "date": null,
+            "evidence": "报名ddl为10月18日晚24:00",
+            "raw": "报名ddl为10月18日晚24:00",
+            "status": "uncertain",
+            "precision": "unknown",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 642
+          },
+          "materials": []
+        }
+      },
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    }
+  ]
+}

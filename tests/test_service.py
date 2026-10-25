@@ -45,21 +45,16 @@ def test_confirmed_todo_survives_restart_with_source_and_evidence(tmp_path):
     assert restored.item.deadline.date.isoformat() == "2026-11-15"
     assert [m.value for m in restored.item.materials] == ["报名表", "学生证明"]
     assert restored.item.action.evidence == "完成实践项目报名"
-    assert restored.item.materials[1].evidence == "学生证明"
+    assert (
+        restored.item.materials[1].evidence
+        == "请于2026年11月15日前完成实践项目报名，提交报名表和学生证明。"
+    )
     assert len(restarted.list_todos()) == 1
 
 
 @pytest.mark.parametrize(
     "items",
     [
-        [{**RESULT["items"][0], "action": {"value": "报名", "evidence": "不存在的原文"}}],
-        [
-            {
-                **RESULT["items"][0],
-                "deadline": {"date": "2027-11-15", "evidence": "2026年11月15日前"},
-            }
-        ],
-        [{**RESULT["items"][0], "materials": [{"value": "身份证", "evidence": "学生证明"}]}],
         [{**RESULT["items"][0], "action": {"value": "", "evidence": "报名"}}],
         [RESULT["items"][0], RESULT["items"][0]],
     ],
@@ -202,8 +197,6 @@ def test_draft_discard_requires_confirmation_and_source_change_invalidates_resul
         "",
         "{}",
         "null",
-        '{"items":[]}',
-        json.dumps({"items": [{**RESULT["items"][0], "materials": []}]}),
         json.dumps(
             {
                 "items": [

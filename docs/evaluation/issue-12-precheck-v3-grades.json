@@ -1,0 +1,803 @@
+{
+  "candidate_commit": "06f87a6f50f1c574c0f919f5f293ce3179a9126c",
+  "prompt_sha256": "5666d0d6c8559e714b57b21596f84beae166cd493a9be0c6a6c8feb0c867fdeb",
+  "evaluation_kind": "development_precheck_not_final",
+  "raw_sha256": "a287a37ca4dd80ae2fd94d24bfcf50336b4e44198d81cb326a6d41e4d2810a8a",
+  "review_status": "agent_review_complete; independent_human_acceptance_pending",
+  "passed_agent_review": 6,
+  "total": 7,
+  "gate": "NOT_FINAL; 6/7 development checks, not a 24-trial quality pass",
+  "http_attempts": 7,
+  "usage": {
+    "prompt_tokens": 9636,
+    "completion_tokens": 1150,
+    "total_tokens": 10786
+  },
+  "runs": [
+    {
+      "case": "M01",
+      "trial": 1,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "checks": {
+        "action": "当前事项范围正确，引用连续且匹配",
+        "deadline": "日期或缺年待确认均符合规则，引用有效",
+        "materials": "完整名称、条件、阶段、处理及原件／数量保留，引用包含完整阶段",
+        "must_exclude": "无误收录或额外事项",
+        "facts": "M04组选一原件正确；M10第1/2轮明确关系待核对，第3轮遗漏；M01空材料正确"
+      },
+      "errors": [],
+      "actual": {
+        "id": "51d12041-cd88-4e28-96f3-db368ddf0e2e",
+        "source": "【2026校运会报名通知】 “中山大学2026年运动会”将于2026年11月7日（周六）在广州校区南校园英东田径场举行，比赛信息如下：  （一）比赛时间、地点 1．时间：2026年11月7日（周六）全天 2．地点：广州校区南校园英东田径场  （二）比赛项目及分组 学生组：田径比赛  男子组：100米、200米、400米、1500米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  女子组：100米、200米、400米、800米、4×100米接力、跳高、跳远、三级跳远、铅球、标枪、铁饼。  补充：跳远是助跑跳不是立定跳。  （三）参赛资格 1. 凡具有中山大学学籍的全日制在读本科生、研究生（含国际学生）均可参加比赛（请带学生证/校园卡备查）。 2. 参赛学生必须经体检合格。其中男子1500米、女子800米参赛者须进行心电图检查，并在赛前检录时签署《身体健康保证书》，承诺身体状况良好，适宜参赛。 3. 中山大学招收的高水平运动员和运动训练专业学生不得报名参赛。  （四）报名要求 1. 径赛每项限报2人（男女分开算）、田赛每项限报1人（男女分开算），如有参赛项目报名超过规定人数，文体部将组织院内筛选。 2. 每人限报2项（另可兼报接力），接力男、女各限报1队。  （五）备注 1. 珠海校区运动员前往南校园的交通安排，以学院后续通知为准。 2. 代表学院参加校运会，综测文体活动加分情况以学院相关规定为准，请大家积极报名！  报名ddl为10月18日晚24:00，谢谢！",
+        "item": {
+          "action": {
+            "value": "报名参加校运会",
+            "evidence": "报名ddl为10月18日晚24:00，谢谢！",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 646
+          },
+          "deadline": {
+            "date": null,
+            "evidence": "报名ddl为10月18日晚24:00",
+            "raw": "报名ddl为10月18日晚24:00",
+            "status": "uncertain",
+            "precision": "unknown",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 624,
+            "evidence_end": 642
+          },
+          "materials": []
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"报名参加校运会\",\"evidence\":\"报名ddl为10月18日晚24:00，谢谢！\"},\"deadline\":{\"raw\":\"10月18日晚24:00\",\"date\":null,\"status\":\"uncertain\",\"precision\":\"unknown\",\"evidence\":\"报名ddl为10月18日晚24:00\"},\"materials\":[]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "校运会报名",
+        "deadline": {
+          "state": "uncertain",
+          "raw": "10月18日晚24:00",
+          "date": null
+        },
+        "materials": [],
+        "must_exclude": [
+          "参赛备查的学生证／校园卡",
+          "赛前签署的身体健康保证书",
+          "体检报告／合格证明",
+          "心电图报告",
+          "资格、名额、接力、交通和综测注意事项"
+        ],
+        "facts": [
+          "只输出报名事项；不扩大成整个活动或新增资格／检查待办",
+          "材料显示原文未提及，不是无需材料",
+          "不以标题年份补截止年份，不把比赛日期当截止，不把24:00改成当日00:00"
+        ]
+      }
+    },
+    {
+      "case": "M04",
+      "trial": 1,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "checks": {
+        "action": "当前事项范围正确，引用连续且匹配",
+        "deadline": "日期或缺年待确认均符合规则，引用有效",
+        "materials": "完整名称、条件、阶段、处理及原件／数量保留，引用包含完整阶段",
+        "must_exclude": "无误收录或额外事项",
+        "facts": "M04组选一原件正确；M10第1/2轮明确关系待核对，第3轮遗漏；M01空材料正确"
+      },
+      "errors": [],
+      "actual": {
+        "id": "38610604-ba05-4ea7-ab7b-e47d9de2edf2",
+        "source": "【实验室门禁申请】请于2026年11月17日前申请门禁。申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+        "item": {
+          "action": {
+            "value": "申请实验室门禁",
+            "evidence": "请于2026年11月17日前申请门禁。",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 9,
+            "evidence_end": 28
+          },
+          "deadline": {
+            "date": "2026-11-17",
+            "evidence": "请于2026年11月17日前申请门禁。",
+            "raw": "请于2026年11月17日前申请门禁。",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 9,
+            "evidence_end": 28
+          },
+          "materials": [
+            {
+              "value": "申请表",
+              "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 28,
+              "evidence_end": 56,
+              "requirement": "申请实验室门禁时须提交申请表"
+            },
+            {
+              "value": "学生证或校园卡",
+              "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 28,
+              "evidence_end": 56,
+              "requirement": "申请实验室门禁时须携带学生证或校园卡任一原件供核验"
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请实验室门禁\",\"evidence\":\"请于2026年11月17日前申请门禁。\"},\"deadline\":{\"raw\":\"2026年11月17日前\",\"date\":\"2026-11-17\",\"status\":\"certain\",\"precision\":\"date\",\"evidence\":\"请于2026年11月17日前申请门禁。\"},\"materials\":[{\"value\":\"申请表\",\"requirement\":\"申请实验室门禁时须提交申请表\",\"evidence\":\"申请时须提交申请表，并携带学生证或校园卡任一原件供核验。\"},{\"value\":\"学生证或校园卡\",\"requirement\":\"申请实验室门禁时须携带学生证或校园卡任一原件供核验\",\"evidence\":\"申请时须提交申请表，并携带学生证或校园卡任一原件供核验。\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "实验室门禁申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-17"
+        },
+        "materials": [
+          {
+            "names": [
+              "申请表"
+            ],
+            "responsibility": "提交",
+            "conditions": null,
+            "stage": "申请时",
+            "relation": "single",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          },
+          {
+            "names": [
+              "学生证",
+              "校园卡"
+            ],
+            "responsibility": "携带供核验",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "原件"
+            ],
+            "relation": "any",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          }
+        ],
+        "facts": [
+          "申请表必需，加上两证任选其一；不是三者任选其一",
+          "关系可以通过文字呈现，不强制特定UI结构"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M04",
+      "trial": 2,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "checks": {
+        "action": "当前事项范围正确，引用连续且匹配",
+        "deadline": "日期或缺年待确认均符合规则，引用有效",
+        "materials": "完整名称、条件、阶段、处理及原件／数量保留，引用包含完整阶段",
+        "must_exclude": "无误收录或额外事项",
+        "facts": "M04组选一原件正确；M10第1/2轮明确关系待核对，第3轮遗漏；M01空材料正确"
+      },
+      "errors": [],
+      "actual": {
+        "id": "fc71aa7a-22a5-4450-863b-f07a44d651c6",
+        "source": "【实验室门禁申请】请于2026年11月17日前申请门禁。申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+        "item": {
+          "action": {
+            "value": "申请门禁",
+            "evidence": "请于2026年11月17日前申请门禁。",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 9,
+            "evidence_end": 28
+          },
+          "deadline": {
+            "date": "2026-11-17",
+            "evidence": "请于2026年11月17日前申请门禁。",
+            "raw": "请于2026年11月17日前申请门禁。",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 9,
+            "evidence_end": 28
+          },
+          "materials": [
+            {
+              "value": "申请表",
+              "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 28,
+              "evidence_end": 56,
+              "requirement": "申请门禁时须提交申请表"
+            },
+            {
+              "value": "学生证或校园卡任一原件",
+              "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 28,
+              "evidence_end": 56,
+              "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验"
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请门禁\",\"evidence\":\"请于2026年11月17日前申请门禁。\"},\"deadline\":{\"raw\":\"2026年11月17日前\",\"date\":\"2026-11-17\",\"status\":\"certain\",\"precision\":\"date\",\"evidence\":\"请于2026年11月17日前申请门禁。\"},\"materials\":[{\"value\":\"申请表\",\"requirement\":\"申请门禁时须提交申请表\",\"evidence\":\"申请时须提交申请表，并携带学生证或校园卡任一原件供核验。\"},{\"value\":\"学生证或校园卡任一原件\",\"requirement\":\"申请门禁时须携带学生证或校园卡任一原件供核验\",\"evidence\":\"申请时须提交申请表，并携带学生证或校园卡任一原件供核验。\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "实验室门禁申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-17"
+        },
+        "materials": [
+          {
+            "names": [
+              "申请表"
+            ],
+            "responsibility": "提交",
+            "conditions": null,
+            "stage": "申请时",
+            "relation": "single",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          },
+          {
+            "names": [
+              "学生证",
+              "校园卡"
+            ],
+            "responsibility": "携带供核验",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "原件"
+            ],
+            "relation": "any",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          }
+        ],
+        "facts": [
+          "申请表必需，加上两证任选其一；不是三者任选其一",
+          "关系可以通过文字呈现，不强制特定UI结构"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M04",
+      "trial": 3,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "checks": {
+        "action": "当前事项范围正确，引用连续且匹配",
+        "deadline": "日期或缺年待确认均符合规则，引用有效",
+        "materials": "完整名称、条件、阶段、处理及原件／数量保留，引用包含完整阶段",
+        "must_exclude": "无误收录或额外事项",
+        "facts": "M04组选一原件正确；M10第1/2轮明确关系待核对，第3轮遗漏；M01空材料正确"
+      },
+      "errors": [],
+      "actual": {
+        "id": "a86aa2cc-619b-42a0-bcde-bac93391cddb",
+        "source": "【实验室门禁申请】请于2026年11月17日前申请门禁。申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+        "item": {
+          "action": {
+            "value": "申请实验室门禁",
+            "evidence": "请于2026年11月17日前申请门禁。",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 9,
+            "evidence_end": 28
+          },
+          "deadline": {
+            "date": "2026-11-17",
+            "evidence": "请于2026年11月17日前申请门禁。",
+            "raw": "请于2026年11月17日前申请门禁。",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 9,
+            "evidence_end": 28
+          },
+          "materials": [
+            {
+              "value": "申请表",
+              "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 28,
+              "evidence_end": 56,
+              "requirement": "申请门禁时须提交申请表"
+            },
+            {
+              "value": "学生证或校园卡任一原件",
+              "evidence": "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 28,
+              "evidence_end": 56,
+              "requirement": "申请门禁时须携带学生证或校园卡任一原件供核验"
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请实验室门禁\",\"evidence\":\"请于2026年11月17日前申请门禁。\"},\"deadline\":{\"raw\":\"2026年11月17日前\",\"date\":\"2026-11-17\",\"status\":\"certain\",\"precision\":\"date\",\"evidence\":\"请于2026年11月17日前申请门禁。\"},\"materials\":[{\"value\":\"申请表\",\"requirement\":\"申请门禁时须提交申请表\",\"evidence\":\"申请时须提交申请表，并携带学生证或校园卡任一原件供核验。\"},{\"value\":\"学生证或校园卡任一原件\",\"requirement\":\"申请门禁时须携带学生证或校园卡任一原件供核验\",\"evidence\":\"申请时须提交申请表，并携带学生证或校园卡任一原件供核验。\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "实验室门禁申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2026-11-17"
+        },
+        "materials": [
+          {
+            "names": [
+              "申请表"
+            ],
+            "responsibility": "提交",
+            "conditions": null,
+            "stage": "申请时",
+            "relation": "single",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          },
+          {
+            "names": [
+              "学生证",
+              "校园卡"
+            ],
+            "responsibility": "携带供核验",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "原件"
+            ],
+            "relation": "any",
+            "evidence": [
+              "申请时须提交申请表，并携带学生证或校园卡任一原件供核验。"
+            ]
+          }
+        ],
+        "facts": [
+          "申请表必需，加上两证任选其一；不是三者任选其一",
+          "关系可以通过文字呈现，不强制特定UI结构"
+        ],
+        "must_exclude": []
+      }
+    },
+    {
+      "case": "M10",
+      "trial": 1,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "checks": {
+        "action": "当前事项范围正确，引用连续且匹配",
+        "deadline": "日期或缺年待确认均符合规则，引用有效",
+        "materials": "完整名称、条件、阶段、处理及原件／数量保留，引用包含完整阶段",
+        "must_exclude": "无误收录或额外事项",
+        "facts": "M04组选一原件正确；M10第1/2轮明确关系待核对，第3轮遗漏；M01空材料正确"
+      },
+      "errors": [],
+      "actual": {
+        "id": "cad25080-2b83-4fbd-b3b8-9f6e7835ea3b",
+        "source": "【图书馆储物柜申请】请于2027年3月13日前申请储物柜。申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。现场签署领取确认单，无须自行准备确认单。",
+        "item": {
+          "action": {
+            "value": "申请储物柜",
+            "evidence": "请于2027年3月13日前申请储物柜。",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 10,
+            "evidence_end": 29
+          },
+          "deadline": {
+            "date": "2027-03-13",
+            "evidence": "2027年3月13日前",
+            "raw": "2027年3月13日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 12,
+            "evidence_end": 23
+          },
+          "materials": [
+            {
+              "value": "身份证/护照原件",
+              "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 29,
+              "evidence_end": 64,
+              "requirement": "申请储物柜时请自行携带身份证/护照原件到窗口核验；身份证与护照的关系待核对"
+            },
+            {
+              "value": "已签字的申请表",
+              "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 29,
+              "evidence_end": 64,
+              "requirement": "申请储物柜时提交一份已签字的申请表"
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请储物柜\",\"evidence\":\"请于2027年3月13日前申请储物柜。\"},\"deadline\":{\"raw\":\"2027年3月13日前\",\"date\":\"2027-03-13\",\"status\":\"certain\",\"precision\":\"date\",\"evidence\":\"2027年3月13日前\"},\"materials\":[{\"value\":\"身份证/护照原件\",\"requirement\":\"申请储物柜时请自行携带身份证/护照原件到窗口核验；身份证与护照的关系待核对\",\"evidence\":\"申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。\"},{\"value\":\"已签字的申请表\",\"requirement\":\"申请储物柜时提交一份已签字的申请表\",\"evidence\":\"申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "图书馆储物柜申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2027-03-13"
+        },
+        "materials": [
+          {
+            "names": [
+              "身份证/护照"
+            ],
+            "responsibility": "自行携带到窗口核验",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "原件"
+            ],
+            "relation": "uncertain",
+            "evidence": [
+              "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。"
+            ]
+          },
+          {
+            "names": [
+              "申请表"
+            ],
+            "responsibility": "提交",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "一份",
+              "已签字"
+            ],
+            "relation": "single",
+            "evidence": [
+              "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。"
+            ]
+          }
+        ],
+        "must_exclude": [
+          "无需自行准备的领取确认单"
+        ],
+        "facts": [
+          "两组分别为证件组和申请表，不能将两组混成三者任选",
+          "斜杠关系未明确，保留原话并明确关系待核对；不丢弃已明确的携带责任及原件限定",
+          "申请表的数量与已签字状态以及申请时提交责任均保留",
+          "不能推断确认单提供方，不为现场签署新增事项"
+        ]
+      }
+    },
+    {
+      "case": "M10",
+      "trial": 2,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": true,
+      "checks": {
+        "action": "当前事项范围正确，引用连续且匹配",
+        "deadline": "日期或缺年待确认均符合规则，引用有效",
+        "materials": "完整名称、条件、阶段、处理及原件／数量保留，引用包含完整阶段",
+        "must_exclude": "无误收录或额外事项",
+        "facts": "M04组选一原件正确；M10第1/2轮明确关系待核对，第3轮遗漏；M01空材料正确"
+      },
+      "errors": [],
+      "actual": {
+        "id": "ab911991-e93a-4b12-9234-7c38b4927d97",
+        "source": "【图书馆储物柜申请】请于2027年3月13日前申请储物柜。申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。现场签署领取确认单，无须自行准备确认单。",
+        "item": {
+          "action": {
+            "value": "申请储物柜",
+            "evidence": "请于2027年3月13日前申请储物柜。",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 10,
+            "evidence_end": 29
+          },
+          "deadline": {
+            "date": "2027-03-13",
+            "evidence": "2027年3月13日前",
+            "raw": "2027年3月13日前",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 12,
+            "evidence_end": 23
+          },
+          "materials": [
+            {
+              "value": "身份证/护照原件",
+              "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 29,
+              "evidence_end": 64,
+              "requirement": "申请储物柜时，需自行携带身份证/护照原件到窗口核验；原文使用斜杠连接身份证与护照，材料关系待核对。"
+            },
+            {
+              "value": "一份已签字的申请表",
+              "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 29,
+              "evidence_end": 64,
+              "requirement": "申请储物柜时，需提交一份已签字的申请表。"
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请储物柜\",\"evidence\":\"请于2027年3月13日前申请储物柜。\"},\"deadline\":{\"raw\":\"2027年3月13日前\",\"date\":\"2027-03-13\",\"status\":\"certain\",\"precision\":\"date\",\"evidence\":\"2027年3月13日前\"},\"materials\":[{\"value\":\"身份证/护照原件\",\"requirement\":\"申请储物柜时，需自行携带身份证/护照原件到窗口核验；原文使用斜杠连接身份证与护照，材料关系待核对。\",\"evidence\":\"申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。\"},{\"value\":\"一份已签字的申请表\",\"requirement\":\"申请储物柜时，需提交一份已签字的申请表。\",\"evidence\":\"申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "图书馆储物柜申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2027-03-13"
+        },
+        "materials": [
+          {
+            "names": [
+              "身份证/护照"
+            ],
+            "responsibility": "自行携带到窗口核验",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "原件"
+            ],
+            "relation": "uncertain",
+            "evidence": [
+              "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。"
+            ]
+          },
+          {
+            "names": [
+              "申请表"
+            ],
+            "responsibility": "提交",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "一份",
+              "已签字"
+            ],
+            "relation": "single",
+            "evidence": [
+              "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。"
+            ]
+          }
+        ],
+        "must_exclude": [
+          "无需自行准备的领取确认单"
+        ],
+        "facts": [
+          "两组分别为证件组和申请表，不能将两组混成三者任选",
+          "斜杠关系未明确，保留原话并明确关系待核对；不丢弃已明确的携带责任及原件限定",
+          "申请表的数量与已签字状态以及申请时提交责任均保留",
+          "不能推断确认单提供方，不为现场签署新增事项"
+        ]
+      }
+    },
+    {
+      "case": "M10",
+      "trial": 3,
+      "reviewer": "Codex agent; not independent human acceptance",
+      "passed_agent_review": false,
+      "checks": {
+        "action": "当前事项范围正确，引用连续且匹配",
+        "deadline": "日期或缺年待确认均符合规则，引用有效",
+        "materials": "完整名称、条件、阶段、处理及原件／数量保留，引用包含完整阶段",
+        "must_exclude": "无误收录或额外事项",
+        "facts": "M04组选一原件正确；M10第1/2轮明确关系待核对，第3轮遗漏；M01空材料正确"
+      },
+      "errors": [
+        {
+          "category": "qualifier_distortion",
+          "location": "draft.item.materials[0].requirement",
+          "note": "保留斜杠，但未明确材料关系待核对。"
+        }
+      ],
+      "actual": {
+        "id": "ee3cfbf7-17b1-470b-a63e-e45163618e22",
+        "source": "【图书馆储物柜申请】请于2027年3月13日前申请储物柜。申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。现场签署领取确认单，无须自行准备确认单。",
+        "item": {
+          "action": {
+            "value": "申请储物柜",
+            "evidence": "请于2027年3月13日前申请储物柜。",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 10,
+            "evidence_end": 29
+          },
+          "deadline": {
+            "date": "2027-03-13",
+            "evidence": "请于2027年3月13日前申请储物柜。",
+            "raw": "请于2027年3月13日前申请储物柜。",
+            "status": "certain",
+            "precision": "date",
+            "origin": "extracted",
+            "review": "matched",
+            "evidence_start": 10,
+            "evidence_end": 29
+          },
+          "materials": [
+            {
+              "value": "身份证/护照原件",
+              "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 29,
+              "evidence_end": 64,
+              "requirement": "申请储物柜时，需自行携带身份证/护照原件到窗口核验。"
+            },
+            {
+              "value": "已签字的申请表",
+              "evidence": "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。",
+              "origin": "extracted",
+              "review": "matched",
+              "evidence_start": 29,
+              "evidence_end": 64,
+              "requirement": "申请储物柜时，需提交一份已签字的申请表。"
+            }
+          ]
+        }
+      },
+      "raw_model_outputs": [
+        [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"items\":[{\"action\":{\"value\":\"申请储物柜\",\"evidence\":\"请于2027年3月13日前申请储物柜。\"},\"deadline\":{\"raw\":\"2027年3月13日前\",\"date\":\"2027-03-13\",\"status\":\"certain\",\"precision\":\"date\",\"evidence\":\"请于2027年3月13日前申请储物柜。\"},\"materials\":[{\"value\":\"身份证/护照原件\",\"requirement\":\"申请储物柜时，需自行携带身份证/护照原件到窗口核验。\",\"evidence\":\"申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。\"},{\"value\":\"已签字的申请表\",\"requirement\":\"申请储物柜时，需提交一份已签字的申请表。\",\"evidence\":\"申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。\"}]}]}"
+            },
+            "logprobs": null,
+            "finish_reason": "stop"
+          }
+        ]
+      ],
+      "expected": {
+        "action": "图书馆储物柜申请",
+        "deadline": {
+          "state": "certain",
+          "date": "2027-03-13"
+        },
+        "materials": [
+          {
+            "names": [
+              "身份证/护照"
+            ],
+            "responsibility": "自行携带到窗口核验",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "原件"
+            ],
+            "relation": "uncertain",
+            "evidence": [
+              "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。"
+            ]
+          },
+          {
+            "names": [
+              "申请表"
+            ],
+            "responsibility": "提交",
+            "conditions": null,
+            "stage": "申请时",
+            "qualifiers": [
+              "一份",
+              "已签字"
+            ],
+            "relation": "single",
+            "evidence": [
+              "申请时请自行携带身份证/护照原件到窗口核验，并提交一份已签字的申请表。"
+            ]
+          }
+        ],
+        "must_exclude": [
+          "无需自行准备的领取确认单"
+        ],
+        "facts": [
+          "两组分别为证件组和申请表，不能将两组混成三者任选",
+          "斜杠关系未明确，保留原话并明确关系待核对；不丢弃已明确的携带责任及原件限定",
+          "申请表的数量与已签字状态以及申请时提交责任均保留",
+          "不能推断确认单提供方，不为现场签署新增事项"
+        ]
+      }
+    }
+  ]
+}

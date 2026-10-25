@@ -24,6 +24,13 @@ def ui(qapp, tmp_path, request):
         assert release.wait(10)
         if getattr(request_config, "param", "success") == "failure":
             return httpx.Response(401)
+        if getattr(request_config, "param", "success") == "empty":
+            return httpx.Response(
+                200,
+                json={
+                    "choices": [{"finish_reason": "stop", "message": {"content": '{"items":[]}'}}]
+                },
+            )
         return ai_response(request)
 
     service = NotificationService(
@@ -95,7 +102,13 @@ def test_qml_background_extract_review_save_and_open(ui, qtbot):
     qtbot.waitUntil(lambda: find_control(root, "todoButton") is not None)
     click(root, "todoButton")
     assert control(root, "sourceInput").property("text") == SOURCE
-    assert "2026年11月15日前" in control(root, "deadlineEvidence").property("text")
+    click(root, "chooseEvidence_deadline")
+    qtbot.waitUntil(lambda: control(root, "evidenceDialog").property("opened"))
+    qtbot.waitUntil(
+        lambda: "2026年11月15日前" in control(root, "evidenceInput").property("selectedText")
+    )
+    assert not control(root, "evidenceApply").property("visible")
+    control(root, "evidenceDialog").reject()
 
 
 def test_qml_prompts_before_discarding_unsaved_input(ui, qtbot):
@@ -133,3 +146,121 @@ def test_qml_key_configuration_does_not_leave_secret_in_field(ui, qtbot):
     assert secret_input.property("text") == ""
     assert service.key_configured()
     assert "已安全保存" in control(root, "statusMessage").property("text")
+
+
+def test_qml_error_configuration_and_successful_recovery(qapp, qtbot, tmp_path):
+    attempts = []
+
+    def response(request):
+        attempts.append(request.headers["Authorization"])
+        if request.headers["Authorization"] == "Bearer wrong-key":
+            return httpx.Response(401)
+        return ai_response(request)
+
+    service = NotificationService(
+        tmp_path / "recover.sqlite3", transport=httpx.MockTransport(response)
+    )
+    service.configure_key("wrong-key")
+    engine, controller = create_engine(service)
+    root = engine.rootObjects()[0]
+    try:
+        control(root, "sourceInput").setProperty("text", SOURCE)
+        click(root, "extractButton")
+        qtbot.waitUntil(lambda: "密钥无效" in controller.message)
+        assert not controller.busy
+        assert not controller.canSave
+        assert service.source == SOURCE
+        click(root, "keyButton")
+        qtbot.waitUntil(lambda: control(root, "keyDialog").property("opened"))
+        control(root, "secretInput").setProperty("text", "correct-key")
+        control(root, "keyDialog").accept()
+        click(root, "extractButton")
+        qtbot.waitUntil(lambda: controller.canSave)
+        assert len(attempts) == 2
+        assert service.list_todos() == []
+    finally:
+        controller.wait_for_workers()
+        root.setProperty("allowClose", True)
+        root.close()
+        engine.deleteLater()
+        qapp.processEvents()
+
+
+def test_qml_editing_source_ignores_old_async_completion(ui, qtbot):
+    root, service, started, release = ui
+    control(root, "sourceInput").setProperty("text", SOURCE)
+    click(root, "extractButton")
+    qtbot.waitUntil(started.is_set)
+    control(root, "sourceInput").setProperty("text", "新的通知")
+    qtbot.waitUntil(lambda: service.source == "新的通知")
+    release.set()
+    qtbot.waitUntil(lambda: not control(root, "loadingIndicator").property("running"))
+    # Process the queued worker-finished signal too, not only the immediate input update.
+    qtbot.wait(100)
+    assert service.draft is None
+    assert control(root, "sourceInput").property("text") == "新的通知"
+    assert not control(root, "confirmButton").property("enabled")
+    assert control(root, "statusMessage").property("text") == ""
+
+
+def test_qml_duplicate_cancel_and_view_do_not_send_ai(ui, qtbot):
+    root, service, started, release = ui
+    release.set()
+    service.set_source(SOURCE)
+    first = service.confirm(service.extract(api_key="test-key").id)
+    second = service.confirm(service.extract(api_key="test-key").id)
+    service.discard(confirmed=True)
+    started.clear()
+    control(root, "sourceInput").setProperty("text", SOURCE)
+    qtbot.waitUntil(lambda: control(root, "duplicateDialog").property("opened"))
+    click(root, "duplicateCancelButton")
+    assert not started.is_set()
+    assert service.source == SOURCE
+    assert {t.id for t in service.list_todos()} == {first.id, second.id}
+    click(root, "extractButton")
+    qtbot.waitUntil(lambda: control(root, "duplicateDialog").property("opened"))
+    click(root, "duplicateViewButton")
+    qtbot.waitUntil(lambda: control(root, "duplicateListDialog").property("opened"))
+    assert control(root, "duplicateListDialog").property("matchCount") == 2
+    click(root, "duplicateTodoButton")
+    qtbot.waitUntil(
+        lambda: control(root, "actionValue").property("text") == first.item.action.value
+    )
+    assert not started.is_set()
+    assert control(root, "sourceInput").property("text") == SOURCE
+    assert not control(root, "confirmButton").property("enabled")
+
+
+def test_qml_duplicate_reextract_requires_confirmation_and_preserves_original(ui, qtbot):
+    root, service, started, release = ui
+    release.set()
+    service.set_source(SOURCE)
+    original = service.confirm(service.extract(api_key="test-key").id)
+    service.discard(confirmed=True)
+    started.clear()
+    control(root, "sourceInput").setProperty("text", SOURCE)
+    qtbot.waitUntil(lambda: control(root, "duplicateDialog").property("opened"))
+    assert not started.is_set()
+    click(root, "duplicateContinueButton")
+    qtbot.waitUntil(lambda: control(root, "confirmButton").property("enabled"))
+    assert started.is_set()
+    assert service.list_todos() == [original]
+    click(root, "confirmButton")
+    qtbot.waitUntil(lambda: len(service.list_todos()) == 2)
+    qtbot.waitUntil(lambda: not control(root, "loadingIndicator").property("running"))
+    assert service.get_todo(original.id) == original
+    assert len({todo.id for todo in service.find_duplicates(SOURCE)}) == 2
+
+
+@pytest.mark.parametrize("ui", ["empty"], indirect=True)
+def test_qml_empty_extraction_has_explicit_message_and_cannot_save(ui, qtbot):
+    root, service, started, release = ui
+    control(root, "sourceInput").setProperty("text", SOURCE)
+    click(root, "extractButton")
+    qtbot.waitUntil(started.is_set)
+    release.set()
+    qtbot.waitUntil(lambda: not control(root, "loadingIndicator").property("running"))
+    assert "未发现可办理事项" in control(root, "statusMessage").property("text")
+    assert not control(root, "confirmButton").property("enabled")
+    assert control(root, "sourceInput").property("text") == SOURCE
+    assert service.list_todos() == []
