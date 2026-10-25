@@ -45,7 +45,10 @@ def test_confirmed_todo_survives_restart_with_source_and_evidence(tmp_path):
     assert restored.item.deadline.date.isoformat() == "2026-11-15"
     assert [m.value for m in restored.item.materials] == ["报名表", "学生证明"]
     assert restored.item.action.evidence == "完成实践项目报名"
-    assert restored.item.materials[1].evidence == "学生证明"
+    assert (
+        restored.item.materials[1].evidence
+        == "请于2026年11月15日前完成实践项目报名，提交报名表和学生证明。"
+    )
     assert len(restarted.list_todos()) == 1
 
 

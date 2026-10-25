@@ -186,7 +186,7 @@ def test_qml_results_hide_redundant_provenance_and_deadline_explanation(qapp, tm
 
 
 def test_material_edit_can_precede_selection_and_keeps_edited_metadata(tmp_path):
-    source = "申请时提交申请表和成绩单。"
+    source = "申请时提交申请表。另行提交成绩单。"
     service = service_for(
         tmp_path,
         source,

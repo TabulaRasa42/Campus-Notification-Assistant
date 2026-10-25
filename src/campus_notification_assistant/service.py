@@ -13,6 +13,7 @@ from uuid import uuid4
 import httpx
 from pydantic import ValidationError
 
+from .citation_quality import complete_material_citations, reject_background_action_quote
 from .credentials import DEFAULT_NAMESPACE, Credentials
 from .deepseek import DeepSeek
 from .errors import ServiceError, StaleRequestError
@@ -59,7 +60,7 @@ def normalize_item(item: Item, source: str) -> Item:
             }
         )
 
-    action = citation(item.action)
+    action = reject_background_action_quote(citation(item.action))
     materials = tuple(
         citation(m).model_copy(update={"review": "invalid"})
         if m.origin != "user" and m.value not in m.evidence
@@ -234,6 +235,7 @@ class NotificationService:
             }
         )
         item = exclude_other_stage_materials(normalize_item(received, source), source)
+        item = complete_material_citations(item, source)
         with self._state_lock:
             if generation != self._generation:
                 raise StaleRequestError()

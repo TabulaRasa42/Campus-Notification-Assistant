@@ -40,6 +40,11 @@ def material_fields(material):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--include-later-captures",
+        action="store_true",
+        help="Also replay the consumed M01 three-trial precheck and final v3 batch",
+    )
     args = parser.parse_args()
     folder = Path(__file__).resolve().parent
     root = folder.parent.parent
@@ -50,7 +55,12 @@ def main():
         check=True,
     )
     sources = {}
-    for name in ("issue-12-cases.json", "issue-12-cases-v2-proposal.json"):
+    corpora = ["issue-12-cases.json", "issue-12-cases-v2-proposal.json"]
+    captures = list(CAPTURES)
+    if args.include_later_captures:
+        corpora.append("issue-12-cases-v3-proposal.json")
+        captures.extend(("issue-12-precheck-v5-raw.json", "issue-12-candidate-v3-raw.json"))
+    for name in corpora:
         for case in json.loads((folder / name).read_text(encoding="utf-8"))["cases"]:
             sources[case["id"]] = case["source"]
     report = {
@@ -61,7 +71,7 @@ def main():
         "runs": [],
     }
     with tempfile.TemporaryDirectory(prefix="issue12-offline-") as temporary:
-        for name in CAPTURES:
+        for name in captures:
             raw = (folder / name).read_bytes()
             report["capture_sha256"][name] = hashlib.sha256(raw).hexdigest()
             for run in json.loads(raw)["runs"]:
@@ -80,11 +90,20 @@ def main():
                     row["outcome"] = "draft" if draft else "empty"
                     if draft:
                         item = json.loads(choices[0]["message"]["content"])["items"][0]
-                        row["before"] = [material_fields(m) for m in item.get("materials", [])]
+                        before = (run.get("draft") or {}).get("item", item)
+                        row["before"] = [material_fields(m) for m in before.get("materials", [])]
                         row["after"] = [
                             material_fields(m.model_dump()) for m in draft.item.materials
                         ]
                         row["changed"] = row["before"] != row["after"]
+                        row["action_after"] = draft.item.action.model_dump(mode="json")
+                        row["action_before"] = before["action"]
+                        row["deadline_unchanged"] = (
+                            draft.item.deadline.model_dump(mode="json") == before.get("deadline")
+                            if "review" in (before.get("deadline") or {})
+                            else None
+                        )
+                        row["confirm_ready"] = draft.item.evidence_ready
                 except ServiceError as exc:
                     row.update(outcome="service_error", message=str(exc))
                 report["runs"].append(row)
@@ -93,6 +112,9 @@ def main():
         "drafts": sum(r["outcome"] == "draft" for r in report["runs"]),
         "service_errors": sum(r["outcome"] == "service_error" for r in report["runs"]),
         "material_changes": sum(r.get("changed", False) for r in report["runs"]),
+        "actions_requiring_review": sum(
+            r.get("action_after", {}).get("review") == "invalid" for r in report["runs"]
+        ),
     }
     with Path(args.output).open("x", encoding="utf-8") as stream:
         json.dump(report, stream, ensure_ascii=False, indent=2)
