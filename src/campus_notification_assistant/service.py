@@ -29,7 +29,7 @@ def validate_evidence(item: Item) -> None:
         raise ServiceError("仍有无效原文依据，请选取真实依据、标为用户补充内容或移除字段。")
 
 
-def normalize_item(item: Item, source: str) -> Item:
+def normalize_item(item: Item, source: str, *, deadline_scope: str | None = None) -> Item:
     def citation(field: Citation) -> Citation:
         if field.origin == "user":
             return field.model_copy(
@@ -77,9 +77,14 @@ def normalize_item(item: Item, source: str) -> Item:
         raw = deadline.raw if deadline.origin == "user" else deadline.evidence or deadline.raw
         # Only an explicit full date associated with a deadline may be normalized.
         candidates: set[date] = set()
-        for match in FULL_DATE.finditer(source):
-            following = re.split(r"[。；;，,\n]", source[match.end() :], maxsplit=1)[0][:12]
-            preceding = re.split(r"[。；;，,\n]", source[: match.start()])[-1][-12:]
+        context = (
+            deadline_scope
+            if deadline_scope and deadline_scope in source and deadline.evidence in deadline_scope
+            else source
+        )
+        for match in FULL_DATE.finditer(context):
+            following = re.split(r"[。；;，,\n]", context[match.end() :], maxsplit=1)[0][:12]
+            preceding = re.split(r"[。；;，,\n]", context[: match.start()])[-1][-12:]
             # Submission alone is not a deadline; do not cross a clause boundary
             # from an activity start into a later request to submit something.
             if re.match(
@@ -133,6 +138,7 @@ def correct_item_field(
     remove: bool = False,
     requirement: str | None = None,
     relation: MaterialRelation | None = None,
+    deadline_scope: str | None = None,
 ) -> Item:
     """Apply one explicit correction using the same rules for drafts and saved edits."""
     old: CitedText | Deadline
@@ -147,9 +153,14 @@ def correct_item_field(
     elif field.startswith("materials."):
         try:
             index = int(field.split(".")[1])
-            if index < 0:
+            if index < 0 or index > len(item.materials):
                 raise IndexError
-            old = item.materials[index]
+            if index == len(item.materials) and not remove:
+                if not value.strip():
+                    raise ServiceError("内容不能为空。")
+                old = Material(value=value, review="invalid")
+            else:
+                old = item.materials[index]
         except (ValueError, IndexError):
             raise ServiceError("材料不存在。") from None
     else:
@@ -224,13 +235,26 @@ def correct_item_field(
         if remove:
             entries.pop(index)
         else:
-            entries[index] = replacement
+            if index == len(entries):
+                entries.append(replacement)
+            else:
+                entries[index] = replacement
         data["materials"] = entries
     else:
         data[field] = replacement
-    corrected = normalize_item(Item.model_validate(data), source)
-    if field != "deadline":
-        corrected = corrected.model_copy(update={"deadline": item.deadline})
+    normalized = normalize_item(Item.model_validate(data), source, deadline_scope=deadline_scope)
+    target = "materials" if field.startswith("materials.") else field
+    corrected = item.model_copy(update={target: getattr(normalized, target)})
+    if target == "materials":
+        # Existing siblings retain their content, citations and unresolved review state.
+        entries = list(item.materials)
+        if remove:
+            entries.pop(index)
+        elif index == len(entries):
+            entries.append(normalized.materials[index])
+        else:
+            entries[index] = normalized.materials[index]
+        corrected = item.model_copy(update={"materials": tuple(entries)})
     if deadline_needs_review:
         # Retain an independent edit without letting the previous citation
         # silently overwrite it or validate a different deadline.
@@ -244,7 +268,9 @@ def correct_item_field(
     return corrected
 
 
-def select_item_evidence(item: Item, source: str, field: str, start: int, end: int) -> Item:
+def select_item_evidence(
+    item: Item, source: str, field: str, start: int, end: int, *, deadline_scope: str | None = None
+) -> Item:
     """Select evidence without replacing the content or unrelated review state."""
     if not 0 <= start < end <= len(source):
         raise ServiceError("请选择通知原文中的依据。")
@@ -269,9 +295,13 @@ def select_item_evidence(item: Item, source: str, field: str, start: int, end: i
         evidence_start=start,
         evidence_end=end,
     )
-    corrected = normalize_item(Item.model_validate(data), source)
-    if field != "deadline":
-        corrected = corrected.model_copy(update={"deadline": item.deadline})
+    normalized = normalize_item(Item.model_validate(data), source, deadline_scope=deadline_scope)
+    if field.startswith("materials."):
+        entries = list(item.materials)
+        entries[index] = normalized.materials[index]
+        corrected = item.model_copy(update={"materials": tuple(entries)})
+    else:
+        corrected = item.model_copy(update={field: getattr(normalized, field)})
     return corrected
 
 

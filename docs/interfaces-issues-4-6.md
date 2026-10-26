@@ -16,6 +16,11 @@
 - 共同使用 `service.correct_item_field(item, source, field, value, ...) -> Item` 和
   `service.select_item_evidence(item, source, field, start, end) -> Item`。
   字段路径继续是 `action`、`deadline`、`materials.N`；Python 字符位置由控制器转换 QML UTF-16 位置。
+- `materials.N` 在 N 恰好等于材料数量且不是删除时追加材料，空名称拒绝；无依据的新材料保持待核对。
+  修正与选依据只替换目标字段，材料的兄弟项及其他字段保留精确状态。
+- `normalize_item` 和两个修正 helper 接受可选 `deadline_scope`，仅用于不同事项的原文分段。
+  分段必须是全文连续子串且包含当前截止依据；否则回退全文保守核对。单事项默认全文，不隐藏跨句冲突。
+  #4 在多项提取时建立明确分段，保存到 `Todo.deadline_scope`；#6 编辑复用该上下文，旧记录默认 None。
 - 内容修正和选依据分开；只处理明确指定字段。沿用 #12 的独立时间修正与待核对保留规则。
   选依据不得回退已修正的材料名称、说明或关系；其他字段操作不得消除未解决引用／时间状态。
 - 用户补充内容清除原文引用并明确标记。未选依据的修改不得伪造支持；存在无效依据的选中事项不可保存。
@@ -25,6 +30,7 @@
 ## 责任与兼容
 
 - A：#4 草稿集合、当前事项导航／选择、增删修正、批量确认、事务与幂等，保留单事项公开调用兼容。
+  多事项批次使用独立 `service.batch`，`service.draft` 保留当前单条 Draft。
   多事项确认提供 `confirm_selected(batch_id) -> list[Todo]`；`confirm` 保留单事项调用行为。
 - B：#6 `begin_todo_edit(id)`、`correct_todo_field(...)`、`select_todo_evidence(...)`、
   `save_todo_edit(id)`、`cancel_todo_edit(id)`、`set_completed(id, bool)`、`delete_todo(id)`。
@@ -39,3 +45,12 @@
 
 沿用 QML Fusion 灰度、8/16/24 间距与 12/14/18/24 字号；通知和当前事项为主，状态和依据为次。
 新增草稿导航和待办操作使用文字状态；同一阶段只保留一个保存主操作。最小 960×700 和常规窗口均实际渲染检查。
+
+## 共享接口验证记录
+
+- 首次抽取已有字段规则后统一离线检查：134 passed、Ruff/mypy 通过。
+- 失败层：应用修正。公开 `correct_field(draft.id, "materials.0", ...)` 无法给空材料列表追加，报“材料不存在”。
+  修复判据：可追加但缺依据时阻止保存；选完整条件依据后再改事项名，材料内容、关系、依据可保存并重启读回。
+  `tests/test_shared_corrections.py` 先 1 failed，修复后连同独立修正与时间回归共 34 passed。
+- 环境失败单列：uv WinGet 链接在沙箱内无法执行、pytest 默认临时根访问被拒；使用受授权执行与工作树 `.scratch` 临时根解决。
+  这些环境错误不算产品行为红灯。
