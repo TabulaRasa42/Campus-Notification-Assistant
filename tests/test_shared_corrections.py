@@ -29,3 +29,18 @@ def test_missing_material_can_be_added_reviewed_and_retained_across_other_edits(
     assert restored.item.materials == reviewed.item.materials
     assert restored.item.materials[0].relation == "any"
     assert restored.source == source
+
+
+@pytest.mark.parametrize("value", ["2029-06-01", "2029年6月1日前"])
+def test_explicit_personal_deadline_remains_a_date_after_other_edits_and_restart(tmp_path, value):
+    service = service_for(tmp_path, "请报名。", {"action": {"value": "报名", "evidence": "请报名。"}})
+    draft = service.extract(api_key="offline")
+    corrected = service.correct_field(draft.id, "deadline", value, user_supplied=True)
+    assert corrected.item.deadline.date.isoformat() == "2029-06-01"
+    assert corrected.item.deadline.status == "certain"
+    service.correct_field(draft.id, "action", "社团报名")
+    saved = service.confirm(draft.id)
+    restored = NotificationService(service.database).get_todo(saved.id)
+    assert restored.item.deadline == corrected.item.deadline
+    assert restored.item.deadline.origin == "user"
+    assert restored.item.deadline.evidence == ""

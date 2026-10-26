@@ -72,6 +72,23 @@ def normalize_item(item: Item, source: str, *, deadline_scope: str | None = None
         deadline = deadline.model_copy(
             update={"status": "missing", "review": "missing", "precision": "unknown"}
         )
+    elif deadline.origin == "user":
+        raw = deadline.raw or (deadline.date.isoformat() if deadline.date else "")
+        explicit = FULL_DATE.fullmatch(raw.strip().removesuffix("前"))
+        personal_date = None
+        if explicit:
+            try:
+                personal_date = date(*(int(part) for part in explicit.groups()))
+            except ValueError:
+                pass
+        deadline = citation(deadline).model_copy(
+            update={
+                "raw": raw,
+                "date": personal_date,
+                "status": "certain" if personal_date else "uncertain",
+                "precision": "date" if personal_date else "unknown",
+            }
+        )
     else:
         deadline = citation(deadline)
         raw = deadline.raw if deadline.origin == "user" else deadline.evidence or deadline.raw
