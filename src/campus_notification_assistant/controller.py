@@ -79,7 +79,7 @@ class Controller(QObject):
 
     @Property(bool, notify=changed)
     def unsaved(self) -> bool:
-        return self.service.has_unsaved_changes
+        return self.service.has_unsaved_changes or self.service.has_todo_edits
 
     @Property(bool, notify=changed)
     def readOnly(self) -> bool:
@@ -101,7 +101,7 @@ class Controller(QObject):
 
     @Property("QVariantMap", notify=changed)  # type: ignore[arg-type]
     def resultData(self) -> dict[str, Any]:
-        result = self._selected or self.service.draft
+        result = self.service.todo_edit or self._selected or self.service.draft
         if result is None:
             return {}
 
@@ -130,11 +130,12 @@ class Controller(QObject):
         }
 
     @Property("QVariantList", notify=changed)  # type: ignore[arg-type]
-    def todos(self) -> list[dict[str, str]]:
+    def todos(self) -> list[dict[str, Any]]:
         return [
             {
                 "id": todo.id,
                 "title": todo.item.action.value,
+                "completed": todo.completed,
                 "date": todo.item.deadline.date.isoformat()
                 if todo.item.deadline.date
                 else (
@@ -148,12 +149,16 @@ class Controller(QObject):
 
     @Property(str, notify=changed)
     def resultHeading(self) -> str:
-        if self._selected or (self.service.draft and not self.service.has_unsaved_changes):
+        if self.editingTodo:
+            return "编辑待办 · 保存后生效"
+        if self._selected:
+            return "已保存的待办 · " + ("已完成" if self._selected.completed else "未完成")
+        if self.service.draft and not self.service.has_unsaved_changes:
             return "已保存的待办"
         return "提取结果 · 待核对"
 
     def _field(self, name: str) -> CitedText | Deadline | None:
-        result = self._selected or self.service.draft
+        result = self.service.todo_edit or self._selected or self.service.draft
         if result is None:
             return None
         if name == "action":
@@ -175,7 +180,7 @@ class Controller(QObject):
             self._message = "该字段暂无可定位的有效原文依据。"
             self.changed.emit()
             return
-        result = self._selected or self.service.draft
+        result = self.service.todo_edit or self._selected or self.service.draft
         if result is None:
             return
         source = result.source
@@ -203,9 +208,13 @@ class Controller(QObject):
         requirement: str | None = None,
         relation: str = "",
     ) -> None:
-        if self._busy or self._selected or self.service.draft is None:
+        if (
+            self._busy
+            or (not self.editingTodo and self._selected)
+            or (not self.editingTodo and self.service.draft is None)
+        ):
             return
-        source = self.service.source
+        source = self._selected.source if self._selected else self.service.source
 
         def python_index(position: int) -> int:
             return len(
@@ -213,8 +222,14 @@ class Controller(QObject):
             )
 
         try:
-            self.service.correct_field(
-                self.service.draft.id,
+            operation = (
+                self.service.correct_todo_field if self.editingTodo else self.service.correct_field
+            )
+            result = self.service.todo_edit or self.service.draft
+            if result is None:
+                return
+            operation(
+                result.id,
                 name,
                 value,
                 user_supplied=user,
@@ -235,14 +250,27 @@ class Controller(QObject):
 
     @Slot(str, int, int)
     def selectEvidence(self, name: str, start: int, end: int) -> None:
-        if self._busy or self._selected or self.service.draft is None:
+        if (
+            self._busy
+            or (not self.editingTodo and self._selected)
+            or (not self.editingTodo and self.service.draft is None)
+        ):
             return
-        encoded = self.service.source.encode("utf-16-le")
+        source = self._selected.source if self._selected else self.service.source
+        encoded = source.encode("utf-16-le")
         try:
             if not 0 <= start < end <= len(encoded) // 2:
                 raise ServiceError("请选择通知原文中的依据。")
-            self.service.select_evidence(
-                self.service.draft.id,
+            operation = (
+                self.service.select_todo_evidence
+                if self.editingTodo
+                else self.service.select_evidence
+            )
+            result = self.service.todo_edit or self.service.draft
+            if result is None:
+                return
+            operation(
+                result.id,
                 name,
                 len(encoded[: start * 2].decode("utf-16-le", errors="ignore")),
                 len(encoded[: end * 2].decode("utf-16-le", errors="ignore")),
@@ -375,6 +403,8 @@ class Controller(QObject):
         )
         try:
             self._todos = self.service.list_todos()
+            if not error and self._operation == "save_todo" and self._selected is not None:
+                self._selected = self.service.get_todo(self._selected.id)
         except ServiceError as exc:
             self._message = str(exc)
         self.changed.emit()
@@ -386,6 +416,8 @@ class Controller(QObject):
         self._request_id += 1
         self._busy = False
         self.service.discard(confirmed=True)
+        if self.service.todo_edit is not None:
+            self.service.cancel_todo_edit(self.service.todo_edit.id)
         self._duplicate_source = None
         self._duplicates = []
         self._selected = None
@@ -397,9 +429,92 @@ class Controller(QObject):
         if self._busy:
             return
         try:
+            if self.service.has_todo_edits:
+                raise ServiceError("待办编辑尚未保存，请先保存或确认丢弃。")
             self.service.discard()
+            if self.service.todo_edit is not None:
+                self.service.cancel_todo_edit(self.service.todo_edit.id)
             self._selected = self.service.get_todo(todo_id)
             self._message = "待办及原文已从本地数据库读取。"
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
+    @Property(bool, notify=changed)
+    def selectedTodo(self) -> bool:
+        return self._selected is not None
+
+    @Property(bool, notify=changed)
+    def editingTodo(self) -> bool:
+        return self.service.todo_edit is not None
+
+    @Property(bool, notify=changed)
+    def editableResult(self) -> bool:
+        return self.service.todo_edit is not None or (
+            self._selected is None and self.service.has_unsaved_changes
+        )
+
+    @Property(bool, notify=changed)
+    def selectedCompleted(self) -> bool:
+        return self._selected.completed if self._selected else False
+
+    @Property(bool, notify=changed)
+    def canSaveTodo(self) -> bool:
+        return (
+            not self._busy
+            and self.service.has_todo_edits
+            and self.service.todo_edit is not None
+            and self.service.todo_edit.item.evidence_ready
+        )
+
+    @Slot()
+    def beginTodoEdit(self) -> None:
+        if self._busy or self._selected is None:
+            return
+        try:
+            self.service.begin_todo_edit(self._selected.id)
+            self._message = "修改暂未保存，请核对后保存。"
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
+    @Slot()
+    def saveTodoEdit(self) -> None:
+        if self.canSaveTodo and self.service.todo_edit is not None:
+            todo_id = self.service.todo_edit.id
+            self._start(lambda: self.service.save_todo_edit(todo_id), "save_todo")
+
+    @Slot()
+    def cancelTodoEdit(self) -> None:
+        if self._busy or self.service.todo_edit is None:
+            return
+        self.service.cancel_todo_edit(self.service.todo_edit.id)
+        self._message = "已取消待办编辑。"
+        self.changed.emit()
+
+    @Slot()
+    def toggleTodoCompleted(self) -> None:
+        if self._busy or self._selected is None or self.editingTodo:
+            return
+        try:
+            self._selected = self.service.set_completed(
+                self._selected.id, not self._selected.completed
+            )
+            self._todos = self.service.list_todos()
+            self._message = "已标记完成。" if self._selected.completed else "已恢复未完成。"
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
+    @Slot()
+    def deleteTodo(self) -> None:
+        if self._busy or self._selected is None:
+            return
+        try:
+            self.service.delete_todo(self._selected.id)
+            self._selected = None
+            self._todos = self.service.list_todos()
+            self._message = "待办已删除。"
         except ServiceError as exc:
             self._message = str(exc)
         self.changed.emit()

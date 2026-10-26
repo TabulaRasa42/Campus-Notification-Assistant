@@ -97,3 +97,4 @@ class Todo(Draft):
     # Application-owned source context of an independently extracted action.
     # Legacy rows retain conservative full-notice time review.
     deadline_scope: str | None = None
+    completed: bool = False

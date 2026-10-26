@@ -337,6 +337,8 @@ class NotificationService:
         self._generation = 0
         self.source = ""
         self.draft: Draft | None = None
+        self.todo_edit: Todo | None = None
+        self._todo_original: Todo | None = None
         self._confirmed_id: str | None = None
         try:
             self.database.parent.mkdir(parents=True, exist_ok=True)
@@ -462,10 +464,16 @@ class NotificationService:
                 raise ServiceError("请先提取未保存的草稿。")
             item = self.draft.item
             corrected = correct_item_field(
-                item, self.source, field, value,
-                evidence_start=evidence_start, evidence_end=evidence_end,
-                user_supplied=user_supplied, remove=remove,
-                requirement=requirement, relation=relation,
+                item,
+                self.source,
+                field,
+                value,
+                evidence_start=evidence_start,
+                evidence_end=evidence_end,
+                user_supplied=user_supplied,
+                remove=remove,
+                requirement=requirement,
+                relation=relation,
             )
             self.draft = self.draft.model_copy(update={"item": corrected})
             return self.draft
@@ -522,3 +530,116 @@ class NotificationService:
             return Todo.model_validate_json(row[0])
         except (sqlite3.Error, ValidationError):
             raise ServiceError("无法读取待办，请检查数据库；数据未被覆盖。") from None
+
+    @property
+    def has_todo_edits(self) -> bool:
+        return self.todo_edit is not None and self.todo_edit != self._todo_original
+
+    def begin_todo_edit(self, todo_id: str) -> Todo:
+        with self._state_lock:
+            if self.todo_edit is not None:
+                if self.todo_edit.id == todo_id:
+                    return self.todo_edit
+                if self.has_todo_edits:
+                    raise ServiceError("待办编辑尚未保存，请先保存或确认丢弃。")
+            todo = self.get_todo(todo_id)
+            self.todo_edit = todo
+            self._todo_original = todo
+            return todo
+
+    def correct_todo_field(
+        self,
+        todo_id: str,
+        field: str,
+        value: str,
+        *,
+        evidence_start: int | None = None,
+        evidence_end: int | None = None,
+        user_supplied: bool = False,
+        remove: bool = False,
+        requirement: str | None = None,
+        relation: MaterialRelation | None = None,
+    ) -> Todo:
+        with self._state_lock:
+            edit = self.todo_edit
+            if edit is None or edit.id != todo_id:
+                raise ServiceError("请先打开待办编辑。")
+            corrected = correct_item_field(
+                edit.item,
+                edit.source,
+                field,
+                value,
+                evidence_start=evidence_start,
+                evidence_end=evidence_end,
+                user_supplied=user_supplied,
+                remove=remove,
+                requirement=requirement,
+                relation=relation,
+                deadline_scope=edit.deadline_scope,
+            )
+            self.todo_edit = edit.model_copy(update={"item": corrected})
+            return self.todo_edit
+
+    def select_todo_evidence(self, todo_id: str, field: str, start: int, end: int) -> Todo:
+        with self._state_lock:
+            edit = self.todo_edit
+            if edit is None or edit.id != todo_id:
+                raise ServiceError("请先打开待办编辑。")
+            corrected = select_item_evidence(
+                edit.item, edit.source, field, start, end, deadline_scope=edit.deadline_scope
+            )
+            self.todo_edit = edit.model_copy(update={"item": corrected})
+            return self.todo_edit
+
+    def _update_todo(self, todo: Todo) -> Todo:
+        try:
+            with self._connect() as connection:
+                updated = connection.execute(
+                    "UPDATE todos SET data = ? WHERE id = ?", (todo.model_dump_json(), todo.id)
+                )
+                if updated.rowcount != 1:
+                    raise ServiceError("待办不存在，未保存任何更改。")
+        except sqlite3.Error:
+            raise ServiceError(
+                "保存失败，待办编辑已保留；请检查数据库占用或可用空间后重试。"
+            ) from None
+        return todo
+
+    def save_todo_edit(self, todo_id: str) -> Todo:
+        with self._state_lock:
+            edit = self.todo_edit
+            if edit is None or edit.id != todo_id:
+                raise ServiceError("请先打开待办编辑。")
+            validate_evidence(edit.item)
+            if not edit.item.action.value.strip():
+                raise ServiceError("事项内容不能为空。")
+            saved = self._update_todo(edit)
+            self.todo_edit = None
+            self._todo_original = None
+            return saved
+
+    def cancel_todo_edit(self, todo_id: str) -> None:
+        with self._state_lock:
+            if self.todo_edit is not None and self.todo_edit.id == todo_id:
+                self.todo_edit = None
+                self._todo_original = None
+
+    def set_completed(self, todo_id: str, completed: bool) -> Todo:
+        with self._state_lock:
+            todo = self.get_todo(todo_id)
+            saved = self._update_todo(todo.model_copy(update={"completed": completed}))
+            if self.todo_edit is not None and self.todo_edit.id == todo_id:
+                self.todo_edit = self.todo_edit.model_copy(update={"completed": completed})
+                self._todo_original = todo.model_copy(update={"completed": completed})
+            return saved
+
+    def delete_todo(self, todo_id: str) -> None:
+        with self._state_lock:
+            try:
+                with self._connect() as connection:
+                    deleted = connection.execute("DELETE FROM todos WHERE id = ?", (todo_id,))
+                    if deleted.rowcount != 1:
+                        raise ServiceError("待办不存在。")
+            except sqlite3.Error:
+                raise ServiceError("删除失败，待办与编辑已保留；请检查数据库占用后重试。") from None
+            self.cancel_todo_edit(todo_id)
