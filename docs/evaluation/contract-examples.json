@@ -1,0 +1,25 @@
+{
+  "examples": [
+    {
+      "items": [{
+        "action": {"value": "申请", "evidence": "请申请。"},
+        "deadline": {"raw": "2028年4月1日前", "date": "2028-04-01", "status": "certain", "precision": "date", "evidence": "2028年4月1日前"},
+        "materials": [{"value": "申请表", "requirement": "申请时提交申请表", "relation": "single", "evidence": "申请时提交申请表。"}]
+      }]
+    },
+    {
+      "items": [{
+        "action": {"value": "报名", "evidence": "请报名。"},
+        "deadline": {"raw": "4月1日前", "date": null, "status": "uncertain", "precision": "unknown", "evidence": "4月1日前"},
+        "materials": []
+      }]
+    },
+    {
+      "items": [{
+        "action": {"value": "领取", "evidence": "请领取。"},
+        "deadline": null,
+        "materials": []
+      }]
+    }
+  ]
+}
