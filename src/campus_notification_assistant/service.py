@@ -1,5 +1,6 @@
 """应用服务：内存草稿与确认后的 SQLite 待办。"""
 
+import json
 import re
 import sqlite3
 from collections.abc import Callable, Iterator
@@ -18,7 +19,17 @@ from .credentials import DEFAULT_NAMESPACE, Credentials
 from .deepseek import DeepSeek
 from .errors import ServiceError, StaleRequestError
 from .material_scope import exclude_other_stage_materials, retain_explicit_shared_subject
-from .models import CitedText, Deadline, Draft, Item, Material, MaterialRelation, Todo
+from .models import (
+    CitedText,
+    Deadline,
+    Draft,
+    DraftBatch,
+    DraftEntry,
+    Item,
+    Material,
+    MaterialRelation,
+    Todo,
+)
 
 Citation = TypeVar("Citation", CitedText, Deadline, Material)
 FULL_DATE = re.compile(r"(\d{4})[年/\-](\d{1,2})[月/\-](\d{1,2})(?:日)?")
@@ -183,17 +194,13 @@ def correct_item_field(
     else:
         raise ServiceError("字段不存在。")
     if remove:
-        replacement = Deadline(
-            status="missing", review="missing", precision="unknown"
-        ).model_dump()
+        replacement = Deadline(status="missing", review="missing", precision="unknown").model_dump()
     else:
         if not value.strip():
             raise ServiceError("内容不能为空。")
         replacement = old.model_dump()
         if user_supplied:
-            replacement.update(
-                origin="user", evidence="", evidence_start=None, evidence_end=None
-            )
+            replacement.update(origin="user", evidence="", evidence_start=None, evidence_end=None)
         elif evidence_start is not None or evidence_end is not None:
             if (
                 evidence_start is None
@@ -216,9 +223,7 @@ def correct_item_field(
                 old.date is not None and value.strip() == old.date.isoformat()
             )
             if not unchanged:
-                replacement.update(
-                    raw=value, date=None, status="uncertain", precision="unknown"
-                )
+                replacement.update(raw=value, date=None, status="uncertain", precision="unknown")
             deadline_needs_review = (
                 not user_supplied
                 and old.origin != "user"
@@ -339,12 +344,17 @@ class NotificationService:
         self.draft: Draft | None = None
         self.todo_edit: Todo | None = None
         self._todo_original: Todo | None = None
+        self.batch: DraftBatch | None = None
         self._confirmed_id: str | None = None
         try:
             self.database.parent.mkdir(parents=True, exist_ok=True)
             with self._connect() as connection:
                 connection.execute(
                     "CREATE TABLE IF NOT EXISTS todos (id TEXT PRIMARY KEY, data TEXT NOT NULL)"
+                )
+                connection.execute(
+                    "CREATE TABLE IF NOT EXISTS confirmed_batches "
+                    "(id TEXT PRIMARY KEY, data TEXT NOT NULL)"
                 )
         except (sqlite3.Error, OSError):
             raise ServiceError("无法打开本地数据库，请检查数据目录权限与可用空间。") from None
@@ -380,6 +390,7 @@ class NotificationService:
                 if self.draft is not None and self.has_unsaved_changes and not discard:
                     raise ServiceError("修改原文会丢弃当前提取结果，请先确认丢弃。")
                 self.draft = None
+                self.batch = None
             self.source = source
 
     def discard(self, *, confirmed: bool = False) -> None:
@@ -389,6 +400,7 @@ class NotificationService:
             self._generation += 1
             self.source = ""
             self.draft = None
+            self.batch = None
 
     def extract(self, *, api_key: str | None = None) -> Draft | None:
         return self.prepare_extraction(api_key=api_key)()
@@ -400,6 +412,7 @@ class NotificationService:
             generation = self._generation
             source = self.source
             self.draft = None
+            self.batch = None
         return lambda: self._extract_snapshot(source, generation, api_key)
 
     def _extract_snapshot(self, source: str, generation: int, api_key: str | None) -> Draft | None:
@@ -424,26 +437,61 @@ class NotificationService:
                 raise StaleRequestError()
             if not result.items:
                 self.draft = None
+                self.batch = DraftBatch(id=str(uuid4()), source=source, entries=(), current_id=None)
                 return None
-        if len(result.items) != 1:
-            raise ServiceError("本次仅支持一条办理事项，请分条提取。")
-        received = result.items[0]
-        received = received.model_copy(
-            update={
-                "action": received.action.model_copy(update={"origin": "extracted"}),
-                "deadline": received.deadline.model_copy(update={"origin": "extracted"}),
-                "materials": tuple(
-                    m.model_copy(update={"origin": "extracted"}) for m in received.materials
-                ),
-            }
-        )
-        item = exclude_other_stage_materials(normalize_item(received, source), source)
-        item = complete_material_citations(item, source)
-        item = retain_explicit_shared_subject(item)
+        batch_id = str(uuid4())
+        scopes: dict[int, str] = {}
+        if len(result.items) > 1:
+            starts: list[tuple[int, int]] = []
+            for index, received in enumerate(result.items):
+                quote = received.action.evidence
+                left, right = received.action.evidence_start, received.action.evidence_end
+                if left is None and right is None and quote and source.count(quote) == 1:
+                    left, right = source.index(quote), source.index(quote) + len(quote)
+                if (
+                    left is None
+                    or right is None
+                    or not 0 <= left < right <= len(source)
+                    or source[left:right] != quote
+                ):
+                    break
+                boundaries = list(re.finditer(r"[。！？!?；;\n，,]", source[:left]))
+                starts.append((boundaries[-1].end() if boundaries else 0, index))
+            if len(starts) == len(result.items) and len({s for s, _ in starts}) == len(starts):
+                starts.sort()
+                for position, (left, index) in enumerate(starts):
+                    right = starts[position + 1][0] if position + 1 < len(starts) else len(source)
+                    scopes[index] = source[0 if position == 0 else left : right]
+        entries = []
+        for index, received in enumerate(result.items):
+            received = received.model_copy(
+                update={
+                    "action": received.action.model_copy(update={"origin": "extracted"}),
+                    "deadline": received.deadline.model_copy(update={"origin": "extracted"}),
+                    "materials": tuple(
+                        m.model_copy(update={"origin": "extracted"}) for m in received.materials
+                    ),
+                }
+            )
+            item = exclude_other_stage_materials(
+                normalize_item(received, source, deadline_scope=scopes.get(index)), source
+            )
+            item = complete_material_citations(item, source)
+            item = retain_explicit_shared_subject(item)
+            entries.append(
+                DraftEntry(
+                    id=batch_id if index == 0 else str(uuid4()),
+                    item=item,
+                    deadline_scope=scopes.get(index),
+                )
+            )
         with self._state_lock:
             if generation != self._generation:
                 raise StaleRequestError()
-            self.draft = Draft(id=str(uuid4()), source=source, item=item)
+            self.batch = DraftBatch(
+                id=batch_id, source=source, entries=tuple(entries), current_id=entries[0].id
+            )
+            self.draft = Draft(id=batch_id, source=source, item=entries[0].item)
             return self.draft
 
     def correct_field(
@@ -463,6 +511,8 @@ class NotificationService:
             if self.draft is None or self.draft.id != draft_id or self._confirmed_id == draft_id:
                 raise ServiceError("请先提取未保存的草稿。")
             item = self.draft.item
+            if field != "action" and not item.action.value.strip():
+                raise ServiceError("请先填写事项内容。")
             corrected = correct_item_field(
                 item,
                 self.source,
@@ -474,8 +524,10 @@ class NotificationService:
                 remove=remove,
                 requirement=requirement,
                 relation=relation,
+                deadline_scope=self._current_scope(),
             )
             self.draft = self.draft.model_copy(update={"item": corrected})
+            self._replace_current(corrected)
             return self.draft
 
     def select_evidence(self, draft_id: str, field: str, start: int, end: int) -> Draft:
@@ -483,28 +535,209 @@ class NotificationService:
         with self._state_lock:
             if self.draft is None or self.draft.id != draft_id or self._confirmed_id == draft_id:
                 raise ServiceError("请先提取未保存的草稿。")
-            corrected = select_item_evidence(self.draft.item, self.source, field, start, end)
+            if not self.draft.item.action.value.strip():
+                raise ServiceError("请先填写事项内容。")
+            corrected = select_item_evidence(
+                self.draft.item,
+                self.source,
+                field,
+                start,
+                end,
+                deadline_scope=self._current_scope(),
+            )
             self.draft = self.draft.model_copy(update={"item": corrected})
+            self._replace_current(corrected)
+            return self.draft
+
+    def _require_batch(self, batch_id: str, *, editable: bool = True) -> DraftBatch:
+        if self.batch is None or self.batch.id != batch_id:
+            raise ServiceError("请先提取并核对通知。")
+        if editable and self._confirmed_id == batch_id:
+            raise ServiceError("本批次已保存，请新建通知后继续。")
+        return self.batch
+
+    def _current_scope(self) -> str | None:
+        return (
+            next(
+                (
+                    entry.deadline_scope
+                    for entry in self.batch.entries
+                    if entry.id == self.batch.current_id
+                ),
+                None,
+            )
+            if self.batch
+            else None
+        )
+
+    def _sync_draft(self) -> None:
+        batch = self.batch
+        current = (
+            next((entry for entry in batch.entries if entry.id == batch.current_id), None)
+            if batch
+            else None
+        )
+        self.draft = (
+            Draft(id=batch.id, source=batch.source, item=current.item)
+            if batch and current
+            else None
+        )
+
+    def _replace_current(self, item: Item) -> None:
+        assert self.batch is not None
+        self.batch = self.batch.model_copy(
+            update={
+                "entries": tuple(
+                    entry.model_copy(update={"item": item})
+                    if entry.id == self.batch.current_id
+                    else entry
+                    for entry in self.batch.entries
+                )
+            }
+        )
+        self._sync_draft()
+
+    def focus_item(self, batch_id: str, item_id: str) -> None:
+        with self._state_lock:
+            batch = self._require_batch(batch_id, editable=False)
+            if not any(entry.id == item_id for entry in batch.entries):
+                raise ServiceError("事项不存在。")
+            self.batch = batch.model_copy(update={"current_id": item_id})
+            self._sync_draft()
+
+    def set_item_selected(self, batch_id: str, item_id: str, selected: bool) -> None:
+        with self._state_lock:
+            batch = self._require_batch(batch_id)
+            if not any(entry.id == item_id for entry in batch.entries):
+                raise ServiceError("事项不存在。")
+            self.batch = batch.model_copy(
+                update={
+                    "entries": tuple(
+                        entry.model_copy(update={"selected": selected})
+                        if entry.id == item_id
+                        else entry
+                        for entry in batch.entries
+                    )
+                }
+            )
+
+    def add_item(self, batch_id: str, title: str = "") -> DraftEntry:
+        with self._state_lock:
+            batch = self._require_batch(batch_id)
+            # A blank editor row is allowed in memory; confirmation validates the title.
+            action = (
+                CitedText(value=title, origin="user")
+                if title.strip()
+                else CitedText.model_construct(value="", origin="user")
+            )
+            entry = DraftEntry(id=str(uuid4()), item=Item(action=action))
+            self.batch = batch.model_copy(
+                update={"entries": (*batch.entries, entry), "current_id": entry.id}
+            )
+            self._sync_draft()
+            return entry
+
+    def remove_item(self, batch_id: str, item_id: str) -> None:
+        with self._state_lock:
+            batch = self._require_batch(batch_id)
+            remaining = tuple(entry for entry in batch.entries if entry.id != item_id)
+            if len(remaining) == len(batch.entries):
+                raise ServiceError("事项不存在。")
+            current = (
+                batch.current_id
+                if batch.current_id != item_id
+                else remaining[0].id
+                if remaining
+                else None
+            )
+            self.batch = batch.model_copy(update={"entries": remaining, "current_id": current})
+            self._sync_draft()
+
+    def add_material(
+        self,
+        batch_id: str,
+        value: str,
+        *,
+        user_supplied: bool = False,
+        evidence_start: int | None = None,
+        evidence_end: int | None = None,
+        requirement: str = "",
+        relation: MaterialRelation | None = None,
+    ) -> Draft:
+        with self._state_lock:
+            self._require_batch(batch_id)
+            if self.draft is None:
+                raise ServiceError("请先选择一条事项。")
+            if not value.strip():
+                raise ServiceError("材料内容不能为空。")
+            item = self.draft.item
+            if not item.action.value.strip():
+                raise ServiceError("请先填写事项内容。")
+            corrected = correct_item_field(
+                item,
+                self.source,
+                f"materials.{len(item.materials)}",
+                value,
+                user_supplied=user_supplied,
+                evidence_start=evidence_start,
+                evidence_end=evidence_end,
+                requirement=requirement,
+                relation=relation,
+                deadline_scope=self._current_scope(),
+            )
+            self._replace_current(corrected)
+            assert self.draft is not None
             return self.draft
 
     def confirm(self, draft_id: str) -> Todo:
+        if self.batch is not None and self.batch.id == draft_id and len(self.batch.entries) != 1:
+            raise ServiceError("请逐项选择并确认保存本批次事项。")
+        saved = self.confirm_selected(draft_id)
+        if len(saved) != 1:
+            raise ServiceError("该批次包含多个事项，请使用批量确认。")
+        return saved[0]
+
+    def confirm_selected(self, batch_id: str) -> list[Todo]:
         with self._state_lock:
-            if self.draft is None or self.draft.id != draft_id:
-                raise ServiceError("请先提取并核对通知。")
-            validate_evidence(self.draft.item)
-            todo = Todo.model_validate(self.draft.model_dump())
             try:
                 with self._connect() as connection:
+                    receipt = connection.execute(
+                        "SELECT data FROM confirmed_batches WHERE id = ?", (batch_id,)
+                    ).fetchone()
+                    if receipt is not None:
+                        return [Todo.model_validate(value) for value in json.loads(receipt[0])]
+                    if self.batch is None or self.batch.id != batch_id:
+                        raise ServiceError("请先提取并核对通知。")
+                    selected = [entry for entry in self.batch.entries if entry.selected]
+                    if not selected:
+                        raise ServiceError("请至少选择一条事项保存。")
+                    for entry in selected:
+                        if not entry.item.action.value.strip():
+                            raise ServiceError("事项内容不能为空。")
+                        validate_evidence(entry.item)
+                    todos = [
+                        Todo(
+                            id=entry.id,
+                            source=self.batch.source,
+                            item=entry.item,
+                            deadline_scope=entry.deadline_scope,
+                        )
+                        for entry in selected
+                    ]
+                    for todo in todos:
+                        connection.execute(
+                            "INSERT INTO todos VALUES (?, ?)", (todo.id, todo.model_dump_json())
+                        )
                     connection.execute(
-                        "INSERT OR IGNORE INTO todos VALUES (?, ?)",
-                        (todo.id, todo.model_dump_json()),
+                        "INSERT INTO confirmed_batches VALUES (?, ?)",
+                        (batch_id, json.dumps([todo.model_dump(mode="json") for todo in todos])),
                     )
             except sqlite3.Error:
                 raise ServiceError(
                     "保存失败，草稿已保留；请检查数据库占用或可用空间后重试。"
                 ) from None
-            self._confirmed_id = todo.id
-            return todo
+            self._confirmed_id = batch_id
+            return todos
 
     def list_todos(self) -> list[Todo]:
         try:

@@ -85,19 +85,102 @@ class Controller(QObject):
     def readOnly(self) -> bool:
         return (
             self._selected is not None
-            or self.service.draft is not None
+            or bool(self.service.batch and self.service.batch.entries)
             or (self._busy and self._operation == "save")
         )
 
     @Property(bool, notify=changed)
     def canSave(self) -> bool:
+        batch = self.service.batch
+        selected = [entry for entry in batch.entries if entry.selected] if batch else []
         return (
             not self._busy
             and self._selected is None
-            and self.service.draft is not None
+            and bool(selected)
             and self.service.has_unsaved_changes
-            and self.service.draft.item.evidence_ready
+            and all(
+                entry.item.action.value.strip() and entry.item.evidence_ready for entry in selected
+            )
         )
+
+    @Property(bool, notify=changed)
+    def hasDraftBatch(self) -> bool:
+        return self._selected is None and self.service.batch is not None
+
+    @Property(int, notify=changed)
+    def draftCount(self) -> int:
+        return len(self.service.batch.entries) if self.hasDraftBatch and self.service.batch else 0
+
+    @Property(int, notify=changed)
+    def currentDraftIndex(self) -> int:
+        batch = self.service.batch
+        return (
+            next(
+                (
+                    index
+                    for index, entry in enumerate(batch.entries)
+                    if entry.id == batch.current_id
+                ),
+                -1,
+            )
+            if batch
+            else -1
+        )
+
+    @Property(int, notify=changed)
+    def selectedCount(self) -> int:
+        return (
+            sum(entry.selected for entry in self.service.batch.entries)
+            if self.hasDraftBatch and self.service.batch
+            else 0
+        )
+
+    @Property(bool, notify=changed)
+    def draftSelected(self) -> bool:
+        batch = self.service.batch
+        return (
+            any(entry.selected and entry.id == batch.current_id for entry in batch.entries)
+            if batch
+            else False
+        )
+
+    def _draft_action(self, operation: Callable[[str], object]) -> None:
+        if self._busy or self._selected is not None or self.service.batch is None:
+            return
+        try:
+            operation(self.service.batch.id)
+            self._message = "草稿已更新，请核对所选事项后保存。"
+        except ServiceError as exc:
+            self._message = str(exc)
+        self.changed.emit()
+
+    @Slot(int)
+    def focusDraft(self, index: int) -> None:
+        batch = self.service.batch
+        if batch and 0 <= index < len(batch.entries):
+            self._draft_action(
+                lambda batch_id: self.service.focus_item(batch_id, batch.entries[index].id)
+            )
+
+    @Slot(bool)
+    def selectDraft(self, selected: bool) -> None:
+        batch = self.service.batch
+        if batch and batch.current_id:
+            current_id = batch.current_id
+            self._draft_action(
+                lambda batch_id: self.service.set_item_selected(batch_id, current_id, selected)
+            )
+
+    @Slot()
+    def addDraft(self) -> None:
+        self._draft_action(lambda batch_id: self.service.add_item(batch_id))
+
+    @Slot()
+    def removeDraft(self) -> None:
+        batch = self.service.batch
+        if batch and batch.current_id:
+            current_id = batch.current_id
+            self._draft_action(lambda batch_id: self.service.remove_item(batch_id, current_id))
 
     @Property("QVariantMap", notify=changed)  # type: ignore[arg-type]
     def resultData(self) -> dict[str, Any]:
@@ -228,6 +311,8 @@ class Controller(QObject):
             result = self.service.todo_edit or self.service.draft
             if result is None:
                 return
+            if name == "materials.new":
+                name = f"materials.{len(result.item.materials)}"
             operation(
                 result.id,
                 name,
@@ -384,9 +469,9 @@ class Controller(QObject):
 
     @Slot()
     def confirm(self) -> None:
-        if self.canSave and self.service.draft is not None:
-            draft_id = self.service.draft.id
-            self._start(lambda: self.service.confirm(draft_id), "save")
+        if self.canSave and self.service.batch is not None:
+            batch_id = self.service.batch.id
+            self._start(lambda: self.service.confirm_selected(batch_id), "save")
 
     @Slot(int, str)
     def _finished(self, request_id: int, error: str) -> None:
