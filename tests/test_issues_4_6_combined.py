@@ -70,9 +70,10 @@ def test_multi_item_correct_select_save_edit_complete_restore_delete_and_restart
     with pytest.raises(ServiceError, match="依据"):
         service.save_todo_edit(first_todo.id)
     assert service.todo_edit.item.deadline.review == "invalid"
-    service.correct_todo_field(first_todo.id, "deadline", "5月20日前", user_supplied=True)
+    service.correct_todo_field(first_todo.id, "deadline", "2029-05-20", user_supplied=True)
     revised_first = service.save_todo_edit(first_todo.id)
     assert revised_first.item.materials == first_todo.item.materials
+    assert revised_first.item.deadline.date.isoformat() == "2029-05-20"
 
     service.begin_todo_edit(second_todo.id)
     service.correct_todo_field(second_todo.id, "action", "借用投影仪申请已核对", user_supplied=True)
