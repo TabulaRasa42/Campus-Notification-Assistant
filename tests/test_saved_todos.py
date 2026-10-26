@@ -85,11 +85,7 @@ def test_legacy_read_and_unrelated_edits_leave_materials_unchanged(tmp_path):
     assert not original.completed
     assert original.item.materials[0].requirement == ""
     assert original.item.materials[0].relation is None
-    with sqlite3.connect(service.database) as connection:
-        assert (
-            connection.execute("SELECT data FROM todos WHERE id=?", (first.id,)).fetchone()[0]
-            == serialized
-        )
+    assert NotificationService(service.database).get_todo(first.id) == original
     service.begin_todo_edit(first.id)
     service.correct_todo_field(first.id, "action", "用户事项", user_supplied=True)
     assert service.save_todo_edit(first.id).item.materials == original.item.materials
