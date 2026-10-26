@@ -1,0 +1,90 @@
+{
+  "kind": "synthetic_offline_fixture_not_model_response",
+  "source": "【合成多事项验收通知】\n请于2029年5月10日前完成志愿者报名。所有报名者报名时上传电子报名表和一张一寸证件照。\n请于2029年5月12日前申请借用投影仪。首次借用者申请时提交盖章申请表，其他借用者免交申请表。\n请于5月14日前领取资料包。领取时携带学生证或校园卡任一原件核验；现场签署领取登记表，无需提前准备。",
+  "response": {
+    "items": [
+      {
+        "action": {
+          "value": "志愿者报名",
+          "evidence": "请于2029年5月10日前完成志愿者报名。"
+        },
+        "deadline": {
+          "raw": "2029年5月10日前",
+          "date": "2029-05-10",
+          "status": "certain",
+          "precision": "date",
+          "evidence": "2029年5月10日前"
+        },
+        "materials": [
+          {
+            "value": "电子报名表",
+            "requirement": "所有报名者报名时上传电子报名表",
+            "relation": "single",
+            "evidence": "所有报名者报名时上传电子报名表和一张一寸证件照。"
+          },
+          {
+            "value": "证件照",
+            "requirement": "所有报名者报名时上传一张一寸证件照",
+            "relation": "single",
+            "evidence": "所有报名者报名时上传电子报名表和一张一寸证件照。"
+          }
+        ]
+      },
+      {
+        "action": {
+          "value": "申请借用投影仪",
+          "evidence": "请于2029年5月12日前申请借用投影仪。"
+        },
+        "deadline": {
+          "raw": "2029年5月12日前",
+          "date": "2029-05-12",
+          "status": "certain",
+          "precision": "date",
+          "evidence": "2029年5月12日前"
+        },
+        "materials": [
+          {
+            "value": "盖章申请表",
+            "requirement": "首次借用者申请时提交盖章申请表，其他借用者免交申请表",
+            "relation": "single",
+            "evidence": "首次借用者申请时提交盖章申请表，其他借用者免交申请表。"
+          }
+        ]
+      },
+      {
+        "action": {
+          "value": "领取资料包",
+          "evidence": "请于5月14日前领取资料包。"
+        },
+        "deadline": {
+          "raw": "5月14日前",
+          "date": null,
+          "status": "uncertain",
+          "precision": "unknown",
+          "evidence": "5月14日前"
+        },
+        "materials": [
+          {
+            "value": "学生证或校园卡",
+            "requirement": "领取时携带学生证或校园卡任一原件核验",
+            "relation": "any",
+            "evidence": "领取时携带学生证或校园卡任一原件核验；"
+          }
+        ]
+      }
+    ]
+  },
+  "expected": {
+    "independent_items": 3,
+    "dates": [
+      "2029-05-10",
+      "2029-05-12",
+      null
+    ],
+    "missing_year": "领取资料包截止缺年份，保留5月14日前且待确认",
+    "exclusions": [
+      "现场签署领取登记表不作为自行准备材料"
+    ],
+    "ownership": "报名表和照片只属报名，盖章申请表只属借用申请，任一证件只属领取"
+  }
+}
