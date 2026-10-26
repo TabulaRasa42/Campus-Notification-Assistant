@@ -121,6 +121,160 @@ def normalize_item(item: Item, source: str) -> Item:
     return Item(action=action, deadline=deadline, materials=materials)
 
 
+def correct_item_field(
+    item: Item,
+    source: str,
+    field: str,
+    value: str,
+    *,
+    evidence_start: int | None = None,
+    evidence_end: int | None = None,
+    user_supplied: bool = False,
+    remove: bool = False,
+    requirement: str | None = None,
+    relation: MaterialRelation | None = None,
+) -> Item:
+    """Apply one explicit correction using the same rules for drafts and saved edits."""
+    old: CitedText | Deadline
+    data = item.model_dump()
+    deadline_needs_review = False
+    if field == "action":
+        if remove or not value.strip():
+            raise ServiceError("事项内容不能为空。")
+        old = item.action
+    elif field == "deadline":
+        old = item.deadline
+    elif field.startswith("materials."):
+        try:
+            index = int(field.split(".")[1])
+            if index < 0:
+                raise IndexError
+            old = item.materials[index]
+        except (ValueError, IndexError):
+            raise ServiceError("材料不存在。") from None
+    else:
+        raise ServiceError("字段不存在。")
+    if remove:
+        replacement = Deadline(
+            status="missing", review="missing", precision="unknown"
+        ).model_dump()
+    else:
+        if not value.strip():
+            raise ServiceError("内容不能为空。")
+        replacement = old.model_dump()
+        if user_supplied:
+            replacement.update(
+                origin="user", evidence="", evidence_start=None, evidence_end=None
+            )
+        elif evidence_start is not None or evidence_end is not None:
+            if (
+                evidence_start is None
+                or evidence_end is None
+                or not 0 <= evidence_start < evidence_end <= len(source)
+            ):
+                raise ServiceError("请选取真实原文依据或明确标为用户补充内容。")
+            replacement.update(
+                origin="extracted",
+                evidence=source[evidence_start:evidence_end],
+                evidence_start=evidence_start,
+                evidence_end=evidence_end,
+            )
+        elif old.origin == "user":
+            # Unchecking user content does not invent a source citation.
+            replacement.update(origin="extracted")
+        if field == "deadline":
+            assert isinstance(old, Deadline)
+            unchanged = value.strip() == old.raw or (
+                old.date is not None and value.strip() == old.date.isoformat()
+            )
+            if not unchanged:
+                replacement.update(
+                    raw=value, date=None, status="uncertain", precision="unknown"
+                )
+            deadline_needs_review = (
+                not user_supplied
+                and old.origin != "user"
+                and evidence_start is None
+                and evidence_end is None
+                and (not unchanged or old.review == "invalid")
+            )
+        else:
+            replacement["value"] = value
+            if isinstance(old, Material):
+                if relation is not None and relation not in {
+                    "single",
+                    "all",
+                    "any",
+                    "uncertain",
+                }:
+                    raise ServiceError("材料关系无效，请选择真实关系或待核对。")
+                replacement["requirement"] = (
+                    requirement.strip()
+                    if requirement is not None
+                    else old.requirement
+                    if value.strip() == old.value
+                    else ""
+                )
+                if relation is not None:
+                    replacement["relation"] = relation
+                elif value.strip() != old.value:
+                    replacement["relation"] = None
+    if field.startswith("materials."):
+        entries = list(data["materials"])
+        if remove:
+            entries.pop(index)
+        else:
+            entries[index] = replacement
+        data["materials"] = entries
+    else:
+        data[field] = replacement
+    corrected = normalize_item(Item.model_validate(data), source)
+    if field != "deadline":
+        corrected = corrected.model_copy(update={"deadline": item.deadline})
+    if deadline_needs_review:
+        # Retain an independent edit without letting the previous citation
+        # silently overwrite it or validate a different deadline.
+        corrected = corrected.model_copy(
+            update={
+                "deadline": corrected.deadline.model_copy(
+                    update={"raw": value.strip(), "review": "invalid"}
+                )
+            }
+        )
+    return corrected
+
+
+def select_item_evidence(item: Item, source: str, field: str, start: int, end: int) -> Item:
+    """Select evidence without replacing the content or unrelated review state."""
+    if not 0 <= start < end <= len(source):
+        raise ServiceError("请选择通知原文中的依据。")
+    data = item.model_dump()
+    if field in {"action", "deadline"}:
+        selected = data[field]
+    elif field.startswith("materials."):
+        try:
+            index = int(field.split(".")[1])
+            if index < 0:
+                raise IndexError
+            entries = list(data["materials"])
+            selected = entries[index]
+            data["materials"] = entries
+        except (ValueError, IndexError):
+            raise ServiceError("材料不存在。") from None
+    else:
+        raise ServiceError("字段不存在。")
+    selected.update(
+        origin="extracted",
+        evidence=source[start:end],
+        evidence_start=start,
+        evidence_end=end,
+    )
+    corrected = normalize_item(Item.model_validate(data), source)
+    if field != "deadline":
+        corrected = corrected.model_copy(update={"deadline": item.deadline})
+    return corrected
+
+
 class NotificationService:
     def __init__(
         self,
@@ -260,112 +414,12 @@ class NotificationService:
             if self.draft is None or self.draft.id != draft_id or self._confirmed_id == draft_id:
                 raise ServiceError("请先提取未保存的草稿。")
             item = self.draft.item
-            old: CitedText | Deadline
-            data = item.model_dump()
-            deadline_needs_review = False
-            if field == "action":
-                if remove or not value.strip():
-                    raise ServiceError("事项内容不能为空。")
-                old = item.action
-            elif field == "deadline":
-                old = item.deadline
-            elif field.startswith("materials."):
-                try:
-                    index = int(field.split(".")[1])
-                    if index < 0:
-                        raise IndexError
-                    old = item.materials[index]
-                except (ValueError, IndexError):
-                    raise ServiceError("材料不存在。") from None
-            else:
-                raise ServiceError("字段不存在。")
-            if remove:
-                replacement = Deadline(
-                    status="missing", review="missing", precision="unknown"
-                ).model_dump()
-            else:
-                if not value.strip():
-                    raise ServiceError("内容不能为空。")
-                replacement = old.model_dump()
-                if user_supplied:
-                    replacement.update(
-                        origin="user", evidence="", evidence_start=None, evidence_end=None
-                    )
-                elif evidence_start is not None or evidence_end is not None:
-                    if (
-                        evidence_start is None
-                        or evidence_end is None
-                        or not 0 <= evidence_start < evidence_end <= len(self.source)
-                    ):
-                        raise ServiceError("请选取真实原文依据或明确标为用户补充内容。")
-                    replacement.update(
-                        origin="extracted",
-                        evidence=self.source[evidence_start:evidence_end],
-                        evidence_start=evidence_start,
-                        evidence_end=evidence_end,
-                    )
-                elif old.origin == "user":
-                    # Unchecking user content does not invent a source citation.
-                    replacement.update(origin="extracted")
-                if field == "deadline":
-                    assert isinstance(old, Deadline)
-                    unchanged = value.strip() == old.raw or (
-                        old.date is not None and value.strip() == old.date.isoformat()
-                    )
-                    if not unchanged:
-                        replacement.update(
-                            raw=value, date=None, status="uncertain", precision="unknown"
-                        )
-                    deadline_needs_review = (
-                        not user_supplied
-                        and old.origin != "user"
-                        and evidence_start is None
-                        and evidence_end is None
-                        and (not unchanged or old.review == "invalid")
-                    )
-                else:
-                    replacement["value"] = value
-                    if isinstance(old, Material):
-                        if relation is not None and relation not in {
-                            "single",
-                            "all",
-                            "any",
-                            "uncertain",
-                        }:
-                            raise ServiceError("材料关系无效，请选择真实关系或待核对。")
-                        replacement["requirement"] = (
-                            requirement.strip()
-                            if requirement is not None
-                            else old.requirement
-                            if value.strip() == old.value
-                            else ""
-                        )
-                        if relation is not None:
-                            replacement["relation"] = relation
-                        elif value.strip() != old.value:
-                            replacement["relation"] = None
-            if field.startswith("materials."):
-                entries = list(data["materials"])
-                if remove:
-                    entries.pop(index)
-                else:
-                    entries[index] = replacement
-                data["materials"] = entries
-            else:
-                data[field] = replacement
-            corrected = normalize_item(Item.model_validate(data), self.source)
-            if field != "deadline":
-                corrected = corrected.model_copy(update={"deadline": item.deadline})
-            if deadline_needs_review:
-                # Retain an independent edit without letting the previous citation
-                # silently overwrite it or validate a different deadline.
-                corrected = corrected.model_copy(
-                    update={
-                        "deadline": corrected.deadline.model_copy(
-                            update={"raw": value.strip(), "review": "invalid"}
-                        )
-                    }
-                )
+            corrected = correct_item_field(
+                item, self.source, field, value,
+                evidence_start=evidence_start, evidence_end=evidence_end,
+                user_supplied=user_supplied, remove=remove,
+                requirement=requirement, relation=relation,
+            )
             self.draft = self.draft.model_copy(update={"item": corrected})
             return self.draft
 
@@ -374,32 +428,7 @@ class NotificationService:
         with self._state_lock:
             if self.draft is None or self.draft.id != draft_id or self._confirmed_id == draft_id:
                 raise ServiceError("请先提取未保存的草稿。")
-            if not 0 <= start < end <= len(self.source):
-                raise ServiceError("请选择通知原文中的依据。")
-            data = self.draft.item.model_dump()
-            if field in {"action", "deadline"}:
-                selected = data[field]
-            elif field.startswith("materials."):
-                try:
-                    index = int(field.split(".")[1])
-                    if index < 0:
-                        raise IndexError
-                    entries = list(data["materials"])
-                    selected = entries[index]
-                    data["materials"] = entries
-                except (ValueError, IndexError):
-                    raise ServiceError("材料不存在。") from None
-            else:
-                raise ServiceError("字段不存在。")
-            selected.update(
-                origin="extracted",
-                evidence=self.source[start:end],
-                evidence_start=start,
-                evidence_end=end,
-            )
-            corrected = normalize_item(Item.model_validate(data), self.source)
-            if field != "deadline":
-                corrected = corrected.model_copy(update={"deadline": self.draft.item.deadline})
+            corrected = select_item_evidence(self.draft.item, self.source, field, start, end)
             self.draft = self.draft.model_copy(update={"item": corrected})
             return self.draft
 
