@@ -95,9 +95,12 @@ def test_resubmitting_an_unresolved_deadline_edit_keeps_review_required(tmp_path
     quote = "2028年4月11日前"
     start = source.index(quote)
     selected = service.select_evidence(draft.id, "deadline", start, start + len(quote))
-    assert selected.item.deadline.review == "matched"
-    assert selected.item.deadline.raw == quote
+    # A different literal source date cannot replace or validate the user's edit.
+    assert selected.item.deadline.review == "invalid"
+    assert selected.item.deadline.raw == "4月12日前"
     assert selected.item.deadline.date is None
+    with pytest.raises(ServiceError):
+        service.confirm(draft.id)
 
 
 def test_qml_edit_does_not_require_a_selection_in_the_notice(qapp, qtbot, tmp_path):

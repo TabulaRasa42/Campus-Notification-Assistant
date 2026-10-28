@@ -378,6 +378,10 @@ def test_qml_saved_material_and_cancel_edit_at_minimum_size(ui, qtbot):
     assert service.todo_edit.item.materials[-1].value == "个人补充材料"
     assert service.todo_edit.item.materials[-1].origin == "user"
     assert service.get_todo(todo.id) == todo
+    material_buttons = [
+        find_control(root, name) for name in ("addMaterial", "addTodoMaterialButton")
+    ]
+    assert sum(bool(button and button.property("visible")) for button in material_buttons) == 1
     click(root, "cancelTodoEditButton")
     qtbot.waitUntil(lambda: control(root, "cancelTodoEditDialog").property("opened"))
     click(root, "discardTodoEditButton")

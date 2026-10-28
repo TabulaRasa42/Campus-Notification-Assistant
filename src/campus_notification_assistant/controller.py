@@ -237,6 +237,11 @@ class Controller(QObject):
         if self._selected:
             return "已保存的待办 · " + ("已完成" if self._selected.completed else "未完成")
         if self.service.draft and not self.service.has_unsaved_changes:
+            batch = self.service.batch
+            if batch and not any(
+                entry.id == batch.current_id and entry.selected for entry in batch.entries
+            ):
+                return "本批未保存的事项"
             return "已保存的待办"
         return "提取结果 · 待核对"
 
@@ -488,6 +493,10 @@ class Controller(QObject):
         )
         try:
             self._todos = self.service.list_todos()
+            if not error and self._operation == "save" and self.service.batch is not None:
+                batch = self.service.batch
+                first_saved = next(entry for entry in batch.entries if entry.selected)
+                self.service.focus_item(batch.id, first_saved.id)
             if not error and self._operation == "save_todo" and self._selected is not None:
                 self._selected = self.service.get_todo(self._selected.id)
         except ServiceError as exc:

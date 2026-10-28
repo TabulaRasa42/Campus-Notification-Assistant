@@ -154,6 +154,25 @@ def normalize_item(item: Item, source: str, *, deadline_scope: str | None = None
     return Item(action=action, deadline=deadline, materials=materials)
 
 
+def _keep_deadline_text(original: Deadline, reviewed: Deadline) -> Deadline:
+    """Changing a citation must not replace the displayed deadline correction."""
+    if not original.raw:
+        return reviewed
+    raw = original.raw.strip()
+    full = FULL_DATE.fullmatch(raw.removesuffix("前"))
+    quoted = {
+        tuple(int(part) for part in match.groups())
+        for match in FULL_DATE.finditer(reviewed.evidence)
+    }
+    supported = raw in reviewed.evidence or (
+        full is not None and quoted == {tuple(int(part) for part in full.groups())}
+    )
+    return reviewed.model_copy(update={
+        "raw": original.raw,
+        "review": reviewed.review if supported else "invalid",
+    })
+
+
 def correct_item_field(
     item: Item,
     source: str,
@@ -265,6 +284,10 @@ def correct_item_field(
     else:
         data[field] = replacement
     normalized = normalize_item(Item.model_validate(data), source, deadline_scope=deadline_scope)
+    if field == "deadline" and not remove and not user_supplied:
+        normalized = normalized.model_copy(update={
+            "deadline": _keep_deadline_text(Deadline.model_validate(replacement), normalized.deadline)
+        })
     target = "materials" if field.startswith("materials.") else field
     corrected = item.model_copy(update={target: getattr(normalized, target)})
     if target == "materials":
@@ -318,6 +341,10 @@ def select_item_evidence(
         evidence_end=end,
     )
     normalized = normalize_item(Item.model_validate(data), source, deadline_scope=deadline_scope)
+    if field == "deadline":
+        normalized = normalized.model_copy(update={
+            "deadline": _keep_deadline_text(item.deadline, normalized.deadline)
+        })
     if field.startswith("materials."):
         entries = list(item.materials)
         entries[index] = normalized.materials[index]
@@ -441,6 +468,7 @@ class NotificationService:
                 return None
         batch_id = str(uuid4())
         scopes: dict[int, str] = {}
+        scope_ranges: dict[int, tuple[int, int]] = {}
         if len(result.items) > 1:
             starts: list[tuple[int, int]] = []
             for index, received in enumerate(result.items):
@@ -461,7 +489,30 @@ class NotificationService:
                 starts.sort()
                 for position, (left, index) in enumerate(starts):
                     right = starts[position + 1][0] if position + 1 < len(starts) else len(source)
-                    scopes[index] = source[0 if position == 0 else left : right]
+                    left = 0 if position == 0 else left
+                    scopes[index] = source[left:right]
+                    scope_ranges[index] = (left, right)
+            # Positional grouping is safe only when no full date remains unassigned.
+            # A later reference can belong to an earlier action; do not guess ownership.
+            deadline_spans = []
+            for index, received in enumerate(result.items):
+                quote = received.deadline.evidence
+                left, right = received.deadline.evidence_start, received.deadline.evidence_end
+                if left is None and right is None and quote and source.count(quote) == 1:
+                    left, right = source.index(quote), source.index(quote) + len(quote)
+                bounds = scope_ranges.get(index)
+                if (
+                    bounds is not None and left is not None and right is not None
+                    and bounds[0] <= left < right <= bounds[1]
+                    and source[left:right] == quote
+                ):
+                    deadline_spans.append((left, right))
+            if any(
+                sum(left <= match.start() and match.end() <= right for left, right in deadline_spans)
+                != 1
+                for match in FULL_DATE.finditer(source)
+            ):
+                scopes.clear()
         entries = []
         for index, received in enumerate(result.items):
             received = received.model_copy(

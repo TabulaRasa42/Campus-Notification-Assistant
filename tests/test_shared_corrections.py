@@ -44,3 +44,34 @@ def test_explicit_personal_deadline_remains_a_date_after_other_edits_and_restart
     assert restored.item.deadline == corrected.item.deadline
     assert restored.item.deadline.origin == "user"
     assert restored.item.deadline.evidence == ""
+
+
+def test_selecting_unrelated_deadline_evidence_cannot_erase_a_correction_in_either_editor(tmp_path):
+    source = "请于2027年4月9日前报名。另注明2027年4月15日前截止。"
+    service = service_for(tmp_path, source, {
+        "action": {"value": "报名", "evidence": "报名"},
+        "deadline": {"date": "2027-04-09", "evidence": "2027年4月9日前"},
+    })
+    draft = service.extract(api_key="offline")
+    quote = "2027年4月9日前"
+    start = source.index(quote)
+    service.correct_field(draft.id, "deadline", "4月15日前")
+    selected = service.select_evidence(draft.id, "deadline", start, start + len(quote))
+    assert selected.item.deadline.raw == "4月15日前"
+    assert selected.item.deadline.review == "invalid"
+    with pytest.raises(ServiceError, match="依据"):
+        service.confirm(draft.id)
+    support = "2027年4月15日前"
+    support_start = source.index(support)
+    selected = service.select_evidence(draft.id, "deadline", support_start, support_start + len(support))
+    assert selected.item.deadline.raw == "4月15日前"
+    assert selected.item.deadline.review == "matched"
+    assert selected.item.deadline.status == "uncertain"
+    todo = service.confirm(draft.id)
+    service.begin_todo_edit(todo.id)
+    service.correct_todo_field(todo.id, "deadline", "4月16日前")
+    selected = service.select_todo_evidence(todo.id, "deadline", start, start + len(quote))
+    assert selected.item.deadline.raw == "4月16日前"
+    assert selected.item.deadline.review == "invalid"
+    with pytest.raises(ServiceError, match="依据"):
+        service.save_todo_edit(todo.id)

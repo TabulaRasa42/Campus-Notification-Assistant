@@ -61,6 +61,7 @@ def main():
 
     from PySide6.QtCore import QTimer
     from PySide6.QtGui import QFontDatabase
+    from PySide6.QtQuick import QQuickWindow
     from PySide6.QtWidgets import QApplication
 
     from campus_notification_assistant.app import create_engine
@@ -72,6 +73,7 @@ def main():
         QFontDatabase.addApplicationFont(str(font))
     engine, controller = create_engine(service)
     window = engine.rootObjects()[0]
+    assert isinstance(window, QQuickWindow)
     window.setTitle("校园通知助手 · #4/#6 合成离线验收 · 独立演示数据")
     if args.minimum:
         window.resize(960, 700)

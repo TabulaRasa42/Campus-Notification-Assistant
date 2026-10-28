@@ -270,9 +270,9 @@ ApplicationWindow {
                                 Layout.fillWidth: true
                                 Label { text: "所需材料"; font.pixelSize: 12; color: "#525252" }
                                 Button {
-                                    objectName: "addMaterial"
-                                    text: "新增材料"
-                                    visible: backend.unsaved
+                                    objectName: backend.editingTodo ? "addTodoMaterialButton" : "addMaterial"
+                                    text: backend.editingTodo ? "补充材料" : "新增材料"
+                                    visible: backend.editableResult
                                     enabled: !backend.busy && !!backend.resultData.action && backend.resultData.action.value.trim().length > 0
                                     onClicked: {
                                         correctionDialog.fieldKey = "materials.new"
@@ -287,20 +287,6 @@ ApplicationWindow {
                                     objectName: "materialsMissing"
                                     visible: (backend.resultData.materials || []).length === 0
                                     text: "原文未提及"
-                                }
-                                Button {
-                                    objectName: "addTodoMaterialButton"
-                                    text: "补充材料"
-                                    visible: backend.editingTodo
-                                    enabled: !backend.busy
-                                    onClicked: {
-                                        correctionDialog.fieldKey = "materials." + (backend.resultData.materials || []).length
-                                        correctionValue.text = ""
-                                        correctionRequirement.text = ""
-                                        correctionRelation.currentIndex = 0
-                                        supplement.checked = false
-                                        correctionDialog.open()
-                                    }
                                 }
                                 Repeater {
                                     model: backend.resultData.materials || []

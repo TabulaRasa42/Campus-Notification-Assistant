@@ -215,6 +215,9 @@ def test_item_date_scope_handles_distinct_clauses_but_keeps_same_item_conflict(
             },
         ]
     }
+    if first_status == "uncertain":
+        # The first item explicitly cites both conflicting dates; the second is independent.
+        content["items"][0]["deadline"]["evidence"] = "2027年4月9日前申请补助" + middle
     service = service_for(tmp_path, content)
     service.set_source(source)
     service.extract(api_key="offline")
@@ -394,6 +397,54 @@ def test_qml_added_action_and_material_require_explicit_evidence(qapp, qtbot, tm
         qtbot.waitUntil(lambda: len(service.list_todos()) == 2)
         qtbot.waitUntil(lambda: not controller.busy)
         assert {todo.item.action.value for todo in service.list_todos()} == {"申请补助", "办理住宿"}
+    finally:
+        controller.wait_for_workers()
+        root.setProperty("allowClose", True)
+        root.close()
+        engine.deleteLater()
+        qapp.processEvents()
+
+
+def test_unassigned_later_deadline_conflict_falls_back_to_full_notice(tmp_path):
+    source = (
+        "请于2027年4月9日前申请补助。请于2027年4月12日前办理住宿。"
+        "另注明补助申请截止为2027年4月10日。"
+    )
+    content = json.loads(json.dumps(CONTENT))
+    for item in content["items"]:
+        item["materials"] = []
+    service = service_for(tmp_path, content)
+    service.set_source(source)
+    service.extract(api_key="offline")
+    assert all(entry.item.deadline.status == "uncertain" for entry in service.batch.entries)
+    assert all(entry.deadline_scope is None for entry in service.batch.entries)
+    saved = service.confirm_selected(service.batch.id)
+    assert all(todo.item.deadline.date is None for todo in saved)
+    assert all(NotificationService(service.database).get_todo(todo.id).item.deadline.date is None
+               for todo in saved)
+
+
+def test_qml_unsaved_unselected_item_is_never_labelled_as_saved(qapp, qtbot, tmp_path):
+    from test_qml import control
+
+    from campus_notification_assistant.app import create_engine
+
+    service = service_for(tmp_path)
+    service.extract(api_key="offline")
+    engine, controller = create_engine(service)
+    root = engine.rootObjects()[0]
+    try:
+        controller.focusDraft(1)
+        controller.selectDraft(False)
+        controller.confirm()
+        qtbot.waitUntil(lambda: not controller.busy)
+        assert len(service.list_todos()) == 1
+        assert "已保存" in controller.resultHeading
+        assert control(root, "actionValue").property("text") == "申请补助"
+        controller.focusDraft(1)
+        assert "未保存" in controller.resultHeading
+        assert "已保存" not in controller.resultHeading
+        assert control(root, "actionValue").property("text") == "办理住宿"
     finally:
         controller.wait_for_workers()
         root.setProperty("allowClose", True)
