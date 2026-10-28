@@ -493,7 +493,8 @@ class NotificationService:
                     scopes[index] = source[left:right]
                     scope_ranges[index] = (left, right)
             # Positional grouping is safe only when no full date remains unassigned.
-            # A later reference can belong to an earlier action; do not guess ownership.
+            # A later reference or a quote with different dates may belong to an earlier
+            # action; literal coverage alone cannot establish ownership.
             deadline_spans = []
             for index, received in enumerate(result.items):
                 quote = received.deadline.evidence
@@ -507,7 +508,14 @@ class NotificationService:
                     and source[left:right] == quote
                 ):
                     deadline_spans.append((left, right))
-            if any(
+            mixed_date_quote = any(
+                len({
+                    tuple(int(part) for part in match.groups())
+                    for match in FULL_DATE.finditer(received.deadline.evidence)
+                }) > 1
+                for received in result.items
+            )
+            if mixed_date_quote or any(
                 sum(left <= match.start() and match.end() <= right for left, right in deadline_spans)
                 != 1
                 for match in FULL_DATE.finditer(source)

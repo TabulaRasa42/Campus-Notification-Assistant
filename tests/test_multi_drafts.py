@@ -222,7 +222,12 @@ def test_item_date_scope_handles_distinct_clauses_but_keeps_same_item_conflict(
     service.set_source(source)
     service.extract(api_key="offline")
     assert service.batch.entries[0].item.deadline.status == first_status
-    assert service.batch.entries[1].item.deadline.date.isoformat() == "2027-04-12"
+    if first_status == "certain":
+        assert service.batch.entries[1].item.deadline.date.isoformat() == "2027-04-12"
+    else:
+        # Multiple dates in one quote may be a later reference to another action.
+        assert service.batch.entries[1].item.deadline.status == "uncertain"
+        assert service.batch.entries[1].item.deadline.date is None
     service.confirm_selected(service.batch.id)
 
 
@@ -405,7 +410,8 @@ def test_qml_added_action_and_material_require_explicit_evidence(qapp, qtbot, tm
         qapp.processEvents()
 
 
-def test_unassigned_later_deadline_conflict_falls_back_to_full_notice(tmp_path):
+@pytest.mark.parametrize("wide_second_quote", [False, True])
+def test_unassigned_later_deadline_conflict_falls_back_to_full_notice(tmp_path, wide_second_quote):
     source = (
         "请于2027年4月9日前申请补助。请于2027年4月12日前办理住宿。"
         "另注明补助申请截止为2027年4月10日。"
@@ -413,6 +419,8 @@ def test_unassigned_later_deadline_conflict_falls_back_to_full_notice(tmp_path):
     content = json.loads(json.dumps(CONTENT))
     for item in content["items"]:
         item["materials"] = []
+    if wide_second_quote:
+        content["items"][1]["deadline"]["evidence"] = source[source.index("请于2027年4月12日"):]
     service = service_for(tmp_path, content)
     service.set_source(source)
     service.extract(api_key="offline")
