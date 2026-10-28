@@ -2,6 +2,9 @@
 
 更新：2026-10-28（Asia/Shanghai）。
 
+审阅入口：[草稿PR #15](https://github.com/TabulaRasa42/Campus-Notification-Assistant/pull/15)，
+[CI实时检查](https://github.com/TabulaRasa42/Campus-Notification-Assistant/pull/15/checks)。保持草稿，不自动合并或关闭Issue。
+
 - 当前版本：`codex/integrate-issues-4-6`，最终受测代码 `5bdc4b191432ebbf53025a847d32e02e28a87655`。
   已重新 fetch 核实远端 main 仍为 `fe8b900`，包含 #12 与 PR #14。
 - 未解决问题：无已知工程阻塞；首轮规范2项、需求3项及复核补充的宽引用变体均已修复，GPT-6.1 Sol 中等思考复核通过。
