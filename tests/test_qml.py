@@ -83,6 +83,26 @@ def click(root, name):
     QTest.mouseClick(root, Qt.MouseButton.LeftButton, pos=point)
 
 
+def reveal_result(root, name, qtbot):
+    """Scroll an actual result control into the viewport before a mouse click."""
+    item = control(root, name)
+    viewport = control(root, "resultsScrollView").property("contentItem")
+
+    def visible_after_layout():
+        if not root.isExposed() or item.width() <= 0 or viewport.height() <= 0:
+            return False
+        center = item.mapToScene(item.boundingRect().center()).y()
+        top = viewport.mapToScene(viewport.boundingRect().topLeft()).y()
+        if top + 8 < center < top + viewport.height() - 8:
+            return True
+        viewport.setProperty(
+            "contentY", max(0, viewport.property("contentY") + center - top - viewport.height() / 2)
+        )
+        return False
+
+    qtbot.waitUntil(visible_after_layout)
+
+
 def test_qml_background_extract_review_save_and_open(ui, qtbot):
     root, service, started, release = ui
     control(root, "sourceInput").setProperty("text", SOURCE)

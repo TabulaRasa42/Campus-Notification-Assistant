@@ -73,7 +73,7 @@ def test_user_can_correct_material_requirement_and_cite_complete_condition(tmp_p
 
 
 def test_qml_material_requirement_is_visible_editable_and_reloaded(qapp, qtbot, tmp_path):
-    from test_qml import click, control
+    from test_qml import click, control, reveal_result
 
     from campus_notification_assistant.app import create_engine
 
@@ -100,13 +100,10 @@ def test_qml_material_requirement_is_visible_editable_and_reloaded(qapp, qtbot, 
         assert control(root, "materialRequirement_0").property("text") == (
             "申请时携带学生证或校园卡任一原件供核验"
         )
+        reveal_result(root, "materialValue_0", qtbot)
         click(root, "materialValue_0")
         qtbot.waitUntil(lambda: control(root, "sourceInput").property("selectedText") == evidence)
-        results = control(root, "resultsScrollView").property("contentItem")
-        results.setProperty(
-            "contentY", max(0, results.property("contentHeight") - results.height())
-        )
-        qapp.processEvents()
+        reveal_result(root, "correction_materials.0", qtbot)
         click(root, "correction_materials.0")
         qtbot.waitUntil(lambda: control(root, "correctionDialog").property("opened"))
         assert control(root, "correctionRequirement").property("text") == (
@@ -146,6 +143,7 @@ def test_qml_material_requirement_is_visible_editable_and_reloaded(qapp, qtbot, 
         assert control(root2, "materialRequirement_0").property("text") == (
             "申请时携带两证中的任一原件，供核验"
         )
+        reveal_result(root2, "materialValue_0", qtbot)
         click(root2, "materialValue_0")
         qtbot.waitUntil(lambda: control(root2, "sourceInput").property("selectedText") == evidence)
         assert not control(root2, "confirmButton").property("enabled")
