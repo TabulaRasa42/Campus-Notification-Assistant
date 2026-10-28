@@ -1,0 +1,25 @@
+# #4 / #6 当前状态入口
+
+更新：2026-10-28（Asia/Shanghai）。
+
+审阅入口：[草稿PR #15](https://github.com/TabulaRasa42/Campus-Notification-Assistant/pull/15)，
+[CI实时检查](https://github.com/TabulaRasa42/Campus-Notification-Assistant/pull/15/checks)。保持草稿，不自动合并或关闭Issue。
+
+- 当前版本：`codex/integrate-issues-4-6`，最终受测代码 `5bdc4b191432ebbf53025a847d32e02e28a87655`。
+  已重新 fetch 核实远端 main 仍为 `fe8b900`，包含 #12 与 PR #14。
+- 未解决问题：无已知工程阻塞；首轮规范2项、需求3项及复核补充的宽引用变体均已修复，GPT-6.1 Sol 中等思考复核通过。
+  多事项真实模型质量未评测，本批用户可用性尚未验收；不把离线结果称为这两项通过。
+- 已验收范围：统一 `uv run python tools/check.py`：Ruff、mypy、190项测试通过（35.31秒）；原生Windows QML交互24项通过（9.65秒）。
+  包含三事项组合流程、真实事务回滚／写锁失败恢复、批次幂等与删除不复活、旧数据读取、
+  原 #3/#5/#7 回归及 #12 最终24轮录制响应逐条重放。原 #12 用户确认继续有效。
+- API 授权余额：新增真实调用0次、可用新授权0次。未读取真实凭据或用户待办库。
+  本批使用录制／合成响应；未重新购买旧基线，未冒充多事项模型质量通过。
+- 下一动作：从下面同一入口确认新增操作，并审阅集成分支／草稿PR；CI实时结果以PR检查页为准。
+  若要测量真实多事项提取质量，另行冻结新评测方案并请求授权，正式评测前须完成同候选开发评审。
+- 用户操作：按验收文档执行新增流程并反馈。已知故障已由工程侧修复，不要求用户代替调试。
+
+唯一验收入口和“操作—预期—反馈”见 [集成验收](acceptance-issues-4-6.md)。
+首轮发现及修复见 [双轴审查](review-issues-4-6.md)；接口见 [共同约定](interfaces-issues-4-6.md)。
+历史实现记录：[A / #4](implementation-issue-4.md)、[B / #6](implementation-issue-6.md)。
+
+本批不合并main、不关闭Issue、不继续#8/#9/#10。#3/#5/#7仍开放，收尾建议在集成验收文档。

@@ -1,9 +1,11 @@
 import threading
+from pathlib import Path
 from uuid import uuid4
 
 import httpx
 import pytest
 from PySide6.QtCore import QObject, Qt, QTimer
+from PySide6.QtGui import QFontDatabase
 from PySide6.QtQuick import QQuickItem
 from PySide6.QtTest import QTest
 from test_service import SOURCE, ai_response
@@ -14,6 +16,10 @@ from campus_notification_assistant.service import NotificationService
 
 @pytest.fixture
 def ui(qapp, tmp_path, request):
+    # The offscreen Windows plugin may not discover installed CJK fonts itself.
+    font_path = Path("C:/Windows/Fonts/msyh.ttc")
+    if font_path.is_file():
+        QFontDatabase.addApplicationFont(str(font_path))
     request_config = request
     namespace = "campus-notification-assistant.qt-test." + str(uuid4())
     release = threading.Event()
@@ -75,6 +81,26 @@ def click(root, name):
     assert isinstance(item, QQuickItem)
     point = item.mapToScene(item.boundingRect().center()).toPoint()
     QTest.mouseClick(root, Qt.MouseButton.LeftButton, pos=point)
+
+
+def reveal_result(root, name, qtbot):
+    """Scroll an actual result control into the viewport before a mouse click."""
+    item = control(root, name)
+    viewport = control(root, "resultsScrollView").property("contentItem")
+
+    def visible_after_layout():
+        if not root.isExposed() or item.width() <= 0 or viewport.height() <= 0:
+            return False
+        center = item.mapToScene(item.boundingRect().center()).y()
+        top = viewport.mapToScene(viewport.boundingRect().topLeft()).y()
+        if top + 8 < center < top + viewport.height() - 8:
+            return True
+        viewport.setProperty(
+            "contentY", max(0, viewport.property("contentY") + center - top - viewport.height() / 2)
+        )
+        return False
+
+    qtbot.waitUntil(visible_after_layout)
 
 
 def test_qml_background_extract_review_save_and_open(ui, qtbot):
@@ -264,3 +290,120 @@ def test_qml_empty_extraction_has_explicit_message_and_cannot_save(ui, qtbot):
     assert not control(root, "confirmButton").property("enabled")
     assert control(root, "sourceInput").property("text") == SOURCE
     assert service.list_todos() == []
+
+
+def test_qml_saved_todo_edit_requires_explicit_save(ui, qtbot):
+    root, service, _started, release = ui
+    release.set()
+    control(root, "sourceInput").setProperty("text", SOURCE)
+    click(root, "extractButton")
+    qtbot.waitUntil(lambda: control(root, "confirmButton").property("enabled"))
+    click(root, "confirmButton")
+    qtbot.waitUntil(lambda: not control(root, "loadingIndicator").property("running"))
+    todo = service.list_todos()[0]
+    click(root, "newButton")
+    qtbot.waitUntil(lambda: control(root, "sourceInput").property("text") == "")
+    click(root, "todoButton")
+    qtbot.waitUntil(lambda: control(root, "editTodoButton").property("visible"))
+    qtbot.wait(100)
+    click(root, "editTodoButton")
+    qtbot.waitUntil(lambda: control(root, "actionCorrection").property("visible"))
+    qtbot.wait(100)
+    click(root, "actionCorrection")
+    qtbot.waitUntil(lambda: control(root, "correctionDialog").property("opened"))
+    control(root, "correctionValue").setProperty("text", "我的报名")
+    control(root, "supplement").setProperty("checked", True)
+    control(root, "correctionDialog").accept()
+    assert service.get_todo(todo.id).item.action.value == todo.item.action.value
+    click(root, "newButton")
+    qtbot.waitUntil(lambda: control(root, "discardDialog").property("opened"))
+    control(root, "discardDialog").reject()
+    click(root, "saveTodoButton")
+    qtbot.waitUntil(lambda: service.get_todo(todo.id).item.action.value == "我的报名")
+    qtbot.waitUntil(lambda: not control(root, "loadingIndicator").property("running"))
+    assert service.get_todo(todo.id).source == SOURCE
+    click(root, "completeTodoButton")
+    assert service.get_todo(todo.id).completed
+    click(root, "completeTodoButton")
+    assert not service.get_todo(todo.id).completed
+    click(root, "deleteTodoButton")
+    qtbot.waitUntil(lambda: control(root, "deleteTodoDialog").property("opened"))
+    control(root, "deleteTodoDialog").accept()
+    assert service.list_todos() == []
+
+
+def test_qml_saved_edit_failure_retains_changes_and_retry(ui, qtbot):
+    import sqlite3
+
+    root, service, _started, release = ui
+    release.set()
+    control(root, "sourceInput").setProperty("text", SOURCE)
+    click(root, "extractButton")
+    qtbot.waitUntil(lambda: control(root, "confirmButton").property("enabled"))
+    click(root, "confirmButton")
+    qtbot.waitUntil(lambda: not control(root, "loadingIndicator").property("running"))
+    todo = service.list_todos()[0]
+    click(root, "newButton")
+    qtbot.waitUntil(lambda: control(root, "sourceInput").property("text") == "")
+    click(root, "todoButton")
+    qtbot.waitUntil(lambda: control(root, "editTodoButton").property("visible"))
+    qtbot.wait(100)
+    click(root, "editTodoButton")
+    qtbot.wait(100)
+    click(root, "actionCorrection")
+    qtbot.waitUntil(lambda: control(root, "correctionDialog").property("opened"))
+    control(root, "correctionValue").setProperty("text", "失败后保留")
+    control(root, "supplement").setProperty("checked", True)
+    control(root, "correctionDialog").accept()
+    with sqlite3.connect(service.database) as locked:
+        locked.execute("BEGIN IMMEDIATE")
+        click(root, "saveTodoButton")
+        qtbot.waitUntil(lambda: "保存失败" in control(root, "statusMessage").property("text"))
+        assert control(root, "actionValue").property("text") == "失败后保留"
+        assert control(root, "saveTodoButton").property("enabled")
+        assert service.get_todo(todo.id) == todo
+    click(root, "saveTodoButton")
+    qtbot.waitUntil(lambda: service.get_todo(todo.id).item.action.value == "失败后保留")
+    qtbot.waitUntil(lambda: not control(root, "loadingIndicator").property("running"))
+    assert "已保存" in control(root, "statusMessage").property("text")
+
+
+def test_qml_saved_material_and_cancel_edit_at_minimum_size(ui, qtbot):
+    root, service, _started, release = ui
+    release.set()
+    root.setWidth(960)
+    root.setHeight(700)
+    control(root, "sourceInput").setProperty("text", SOURCE)
+    click(root, "extractButton")
+    qtbot.waitUntil(lambda: control(root, "confirmButton").property("enabled"))
+    click(root, "confirmButton")
+    qtbot.waitUntil(lambda: not control(root, "loadingIndicator").property("running"))
+    todo = service.list_todos()[0]
+    click(root, "newButton")
+    qtbot.waitUntil(lambda: control(root, "sourceInput").property("text") == "")
+    click(root, "todoButton")
+    qtbot.waitUntil(lambda: control(root, "editTodoButton").property("visible"))
+    qtbot.wait(100)
+    click(root, "editTodoButton")
+    qtbot.wait(100)
+    scroll = control(root, "resultsScrollView").property("contentItem")
+    scroll.setProperty("contentY", control(root, "addTodoMaterialButton").y())
+    qtbot.wait(100)
+    click(root, "addTodoMaterialButton")
+    qtbot.waitUntil(lambda: control(root, "correctionDialog").property("opened"))
+    control(root, "correctionValue").setProperty("text", "个人补充材料")
+    control(root, "correctionRequirement").setProperty("text", "自愿补充电子版")
+    control(root, "supplement").setProperty("checked", True)
+    control(root, "correctionDialog").accept()
+    assert service.todo_edit.item.materials[-1].value == "个人补充材料"
+    assert service.todo_edit.item.materials[-1].origin == "user"
+    assert service.get_todo(todo.id) == todo
+    material_buttons = [
+        find_control(root, name) for name in ("addMaterial", "addTodoMaterialButton")
+    ]
+    assert sum(bool(button and button.property("visible")) for button in material_buttons) == 1
+    click(root, "cancelTodoEditButton")
+    qtbot.waitUntil(lambda: control(root, "cancelTodoEditDialog").property("opened"))
+    click(root, "discardTodoEditButton")
+    assert service.todo_edit is None
+    assert service.get_todo(todo.id) == todo

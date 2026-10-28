@@ -2,6 +2,7 @@
 // 主操作随状态从“提取信息”切换为“确认保存”；新建与配置为次操作。
 // 灰度先行，使用 Qt 系统控件与中性色；间距 8/16/24，字号 12/14/18/24。
 // 材料名称为主，完整限定说明为正文；修正和独立依据窗口分开，沿用Fusion表单与灰度。
+// 批次导航和逐项选择是次操作，事项/日期/材料保持主内容；保存所选是唯一主操作。
 import QtQuick
 import QtQuick.Controls.Fusion
 import QtQuick.Layouts
@@ -94,7 +95,7 @@ ApplicationWindow {
             Button {
                 objectName: citedField.fieldKey === "action" ? "actionCorrection" : "correction_" + citedField.fieldKey
                 text: "修正"
-                visible: backend.unsaved && window.hasResult
+                visible: backend.editableResult && window.hasResult
                 enabled: !backend.busy
                 onClicked: {
                     correctionDialog.fieldKey = citedField.fieldKey
@@ -107,7 +108,7 @@ ApplicationWindow {
             }
             Button {
                 objectName: "chooseEvidence_" + citedField.fieldKey
-                text: backend.unsaved ? "选择依据" : "查看依据"
+                text: backend.editableResult ? "选择依据" : "查看依据"
                 enabled: !backend.busy
                 onClicked: {
                     evidenceDialog.fieldKey = citedField.fieldKey
@@ -170,7 +171,7 @@ ApplicationWindow {
                     spacing: 16
                     RowLayout {
                         Label { text: "通知原文"; font.pixelSize: 18; font.bold: true }
-                        Button { text: "修改原文"; enabled: !backend.busy && window.hasResult && backend.unsaved; onClicked: { sourceEdit.text = backend.sourceText; sourceEditDialog.open() } }
+                        Button { text: "修改原文"; enabled: !backend.busy && window.hasResult && backend.unsaved && !backend.selectedTodo; onClicked: { sourceEdit.text = backend.sourceText; sourceEditDialog.open() } }
                     }
                     Label {
                         text: "保留完整内容，逐项对照右侧信息。"
@@ -190,7 +191,7 @@ ApplicationWindow {
                             persistentSelection: true
                             textFormat: TextEdit.PlainText
                             wrapMode: TextEdit.Wrap
-                            placeholderText: "在这里粘贴通知全文…\n\n支持一条办理事项；缺失信息与待确认时间可保存。"
+                            placeholderText: "在这里粘贴通知全文…\n\n多个独立事项可分别核对、选择保存；缺失信息与待确认时间可保存。"
                             onTextChanged: if (!readOnly) backend.updateSource(text)
                         }
                     }
@@ -206,6 +207,24 @@ ApplicationWindow {
                     anchors.fill: parent
                     spacing: 16
                     Label { text: backend.resultHeading; font.pixelSize: 18; font.bold: true }
+                    ColumnLayout {
+                        visible: backend.hasDraftBatch
+                        Layout.fillWidth: true
+                        spacing: 8
+                        RowLayout {
+                            spacing: 8
+                            Button { objectName: "previousDraft"; text: "上一项"; enabled: !backend.busy && backend.currentDraftIndex > 0; onClicked: backend.focusDraft(backend.currentDraftIndex - 1) }
+                            Label { objectName: "draftPosition"; text: (backend.currentDraftIndex + 1) + " / " + backend.draftCount; Accessible.name: "当前事项位置" }
+                            Button { objectName: "nextDraft"; text: "下一项"; enabled: !backend.busy && backend.currentDraftIndex < backend.draftCount - 1; onClicked: backend.focusDraft(backend.currentDraftIndex + 1) }
+                        }
+                        RowLayout {
+                            spacing: 8
+                            CheckBox { objectName: "draftSelected"; text: "保存此项"; checked: backend.draftSelected; enabled: !backend.busy && backend.unsaved && window.hasResult; onClicked: backend.selectDraft(checked) }
+                            Button { objectName: "addDraft"; text: "新增事项"; enabled: !backend.busy && backend.unsaved; onClicked: backend.addDraft() }
+                            Button { objectName: "removeDraft"; text: "移除此项"; enabled: !backend.busy && backend.unsaved && window.hasResult; onClicked: backend.removeDraft() }
+                        }
+                        Label { text: "已选择 " + backend.selectedCount + " 项；未选事项不会保存。"; color: "#525252"; font.pixelSize: 12; wrapMode: Text.Wrap; Layout.fillWidth: true }
+                    }
                     ScrollView {
                         objectName: "resultsScrollView"
                         Layout.fillWidth: true
@@ -250,6 +269,20 @@ ApplicationWindow {
                                 spacing: 16
                                 Layout.fillWidth: true
                                 Label { text: "所需材料"; font.pixelSize: 12; color: "#525252" }
+                                Button {
+                                    objectName: backend.editingTodo ? "addTodoMaterialButton" : "addMaterial"
+                                    text: backend.editingTodo ? "补充材料" : "新增材料"
+                                    visible: backend.editableResult
+                                    enabled: !backend.busy && !!backend.resultData.action && backend.resultData.action.value.trim().length > 0
+                                    onClicked: {
+                                        correctionDialog.fieldKey = "materials.new"
+                                        correctionValue.text = ""
+                                        correctionRequirement.text = ""
+                                        correctionRelation.currentIndex = 0
+                                        supplement.checked = false
+                                        correctionDialog.open()
+                                    }
+                                }
                                 Label {
                                     objectName: "materialsMissing"
                                     visible: (backend.resultData.materials || []).length === 0
@@ -290,14 +323,21 @@ ApplicationWindow {
             }
             Label {
                 objectName: "statusMessage"
+                Layout.minimumWidth: 0
                 text: backend.message
                 textFormat: Text.PlainText
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
                 Accessible.role: Accessible.StaticText
             }
+            Button { objectName: "editTodoButton"; text: "编辑待办"; visible: backend.selectedTodo && !backend.editingTodo; enabled: !backend.busy; onClicked: backend.beginTodoEdit() }
+            Button { objectName: "completeTodoButton"; text: backend.selectedCompleted ? "恢复未完成" : "标记完成"; visible: backend.selectedTodo && !backend.editingTodo; enabled: !backend.busy; onClicked: backend.toggleTodoCompleted() }
+            Button { objectName: "deleteTodoButton"; text: "删除"; visible: backend.selectedTodo && !backend.editingTodo; enabled: !backend.busy; onClicked: deleteTodoDialog.open() }
+            Button { objectName: "cancelTodoEditButton"; text: "取消编辑"; visible: backend.editingTodo; enabled: !backend.busy; onClicked: { if (backend.unsaved) cancelTodoEditDialog.open(); else backend.cancelTodoEdit() } }
+            Button { objectName: "saveTodoButton"; text: "保存修改"; visible: backend.editingTodo; highlighted: true; enabled: backend.canSaveTodo; onClicked: backend.saveTodoEdit() }
             Button {
                 objectName: "extractButton"
+                visible: !backend.selectedTodo
                 text: backend.busy ? "处理中…" : "提取信息"
                 enabled: !backend.busy && !backend.readOnly && sourceInput.text.trim().length > 0
                 highlighted: !window.hasResult
@@ -305,7 +345,8 @@ ApplicationWindow {
             }
             Button {
                 objectName: "confirmButton"
-                text: "已核对，确认保存"
+                visible: !backend.selectedTodo
+                text: backend.hasDraftBatch ? "已核对，保存所选 " + backend.selectedCount + " 项" : "已核对，确认保存"
                 enabled: backend.canSave
                 highlighted: window.hasResult
                 onClicked: backend.confirm()
@@ -324,7 +365,7 @@ ApplicationWindow {
                     objectName: "todoButton"
                     required property var modelData
                     width: todoList.width
-                    text: modelData.title + "    |    截止 " + modelData.date + "    |    查看原文与依据"
+                    text: (modelData.completed ? "已完成 · " : "未完成 · ") + modelData.title + "    |    截止 " + modelData.date + "    |    查看原文与依据"
                     enabled: !backend.busy
                     onClicked: window.requestAction("open", modelData.id)
                 }
@@ -396,7 +437,7 @@ ApplicationWindow {
         id: evidenceDialog
         objectName: "evidenceDialog"
         property string fieldKey: ""
-        title: backend.unsaved ? "选择依据" : "查看依据"
+        title: backend.editableResult ? "选择依据" : "查看依据"
         anchors.centerIn: parent
         modal: true
         width: Math.min(760, window.width - 80)
@@ -404,7 +445,7 @@ ApplicationWindow {
         contentItem: ColumnLayout {
             spacing: 16
             Label {
-                visible: backend.unsaved
+                visible: backend.editableResult
                 text: "选中支持该字段的完整原文片段。"
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
@@ -431,16 +472,16 @@ ApplicationWindow {
             Button {
                 objectName: "evidenceApply"
                 text: "使用所选文字"
-                visible: backend.unsaved
+                visible: backend.editableResult
                 enabled: !backend.busy && evidenceInput.selectionEnd > evidenceInput.selectionStart
                 DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
             }
             Button {
-                text: backend.unsaved ? "取消" : "关闭"
+                text: backend.editableResult ? "取消" : "关闭"
                 DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
             }
         }
-        onAccepted: if (backend.unsaved) backend.selectEvidence(fieldKey, evidenceInput.selectionStart, evidenceInput.selectionEnd)
+        onAccepted: if (backend.editableResult) backend.selectEvidence(fieldKey, evidenceInput.selectionStart, evidenceInput.selectionEnd)
     }
     Dialog {
         id: correctionDialog
@@ -491,11 +532,37 @@ ApplicationWindow {
             CheckBox { id: supplement; objectName: "supplement"; text: "这是用户补充内容" }
             Button {
                 text: "移除此字段"
-                enabled: correctionDialog.fieldKey !== "action"
+                objectName: "removeField"
+                enabled: correctionDialog.fieldKey !== "action" && correctionDialog.fieldKey !== "materials.new"
                 onClicked: { backend.correctField(correctionDialog.fieldKey, "", false, true, 0, 0); correctionDialog.close() }
             }
         }
         onAccepted: backend.correctField(fieldKey, correctionValue.text, supplement.checked, false, -1, -1, correctionRequirement.text, correctionRelation.currentValue)
+    }
+    Dialog {
+        id: deleteTodoDialog
+        objectName: "deleteTodoDialog"
+        title: "删除这条待办？"
+        anchors.centerIn: parent
+        modal: true
+        width: 440
+        standardButtons: Dialog.Ok | Dialog.Cancel
+        Label { text: "删除后无法恢复，请确认。"; wrapMode: Text.Wrap; width: parent.width }
+        onAccepted: backend.deleteTodo()
+    }
+    Dialog {
+        id: cancelTodoEditDialog
+        objectName: "cancelTodoEditDialog"
+        title: "丢弃待办修改？"
+        anchors.centerIn: parent
+        modal: true
+        width: 440
+        Label { text: "将恢复这条待办已保存的内容。"; wrapMode: Text.Wrap; width: parent.width }
+        footer: DialogButtonBox {
+            Button { text: "继续编辑"; DialogButtonBox.buttonRole: DialogButtonBox.RejectRole }
+            Button { objectName: "discardTodoEditButton"; text: "丢弃修改"; DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole }
+        }
+        onAccepted: backend.cancelTodoEdit()
     }
     Dialog {
         id: sourceEditDialog
@@ -544,7 +611,7 @@ ApplicationWindow {
         anchors.centerIn: parent
         modal: true
         width: 440
-        Label { text: "当前输入与提取草稿尚未保存，丢弃后无法恢复。"; wrapMode: Text.Wrap; width: parent.width }
+        Label { text: backend.editingTodo ? "待办修改尚未保存，丢弃后将恢复已保存的内容。" : "当前输入与提取草稿尚未保存，丢弃后无法恢复。"; wrapMode: Text.Wrap; width: parent.width }
         footer: DialogButtonBox {
             Button { text: "返回核对"; DialogButtonBox.buttonRole: DialogButtonBox.RejectRole }
             Button { text: "丢弃"; DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole }

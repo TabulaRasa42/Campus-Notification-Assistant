@@ -56,7 +56,6 @@ def test_confirmed_todo_survives_restart_with_source_and_evidence(tmp_path):
     "items",
     [
         [{**RESULT["items"][0], "action": {"value": "", "evidence": "报名"}}],
-        [RESULT["items"][0], RESULT["items"][0]],
     ],
 )
 def test_invalid_extraction_cannot_be_confirmed(tmp_path, items):

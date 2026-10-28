@@ -94,4 +94,21 @@ class Draft(ValueModel):
 
 
 class Todo(Draft):
-    pass
+    # Application-owned source context of an independently extracted action.
+    # Legacy rows retain conservative full-notice time review.
+    deadline_scope: str | None = None
+    completed: bool = False
+
+
+class DraftEntry(ValueModel):
+    id: str
+    item: Item
+    selected: bool = True
+    deadline_scope: str | None = None
+
+
+class DraftBatch(ValueModel):
+    id: str
+    source: str
+    entries: tuple[DraftEntry, ...]
+    current_id: str | None
